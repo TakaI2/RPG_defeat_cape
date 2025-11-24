@@ -68,7 +68,6 @@ Shader "Custom/DoubleSidedGlossyCloth"
                 float4 tangentWS : TEXCOORD2;
                 float2 uv : TEXCOORD3;
                 float3 viewDirWS : TEXCOORD4;
-                float facing : VFACE; // 表裏判定用
             };
 
             CBUFFER_START(UnityPerMaterial)

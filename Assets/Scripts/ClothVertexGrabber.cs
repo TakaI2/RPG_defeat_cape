@@ -24,6 +24,9 @@ public class ClothVertexGrabber : MonoBehaviour
     private int[] grabbedVertexIndices = null; // 掴んでいる頂点のインデックス
     private VertexAttribute[] originalAttributes = null; // 元の頂点属性を保存
 
+    [Header("Direct Mesh Control")]
+    [SerializeField] private bool useDirectMeshControl = true; // メッシュを直接制御
+
     void Start()
     {
         // Auto-find objects if not assigned
@@ -83,7 +86,14 @@ public class ClothVertexGrabber : MonoBehaviour
         // Register to simulation events
         MagicaManager.OnPreSimulation += UpdateGrabbedVertex;
         MagicaManager.OnPostSimulation += ForceUpdateDisplayPosition;
-        Debug.Log("[ClothVertexGrabber] Registered to OnPreSimulation and OnPostSimulation events");
+
+        // Register to camera pre-render event for direct mesh control
+        if (useDirectMeshControl)
+        {
+            Camera.onPreRender += OnCameraPreRender;
+        }
+
+        Debug.Log("[ClothVertexGrabber] Registered to OnPreSimulation, OnPostSimulation, and Camera.onPreRender events");
     }
 
     void OnDisable()
@@ -91,7 +101,11 @@ public class ClothVertexGrabber : MonoBehaviour
         // Unregister from simulation events
         MagicaManager.OnPreSimulation -= UpdateGrabbedVertex;
         MagicaManager.OnPostSimulation -= ForceUpdateDisplayPosition;
-        Debug.Log("[ClothVertexGrabber] Unregistered from simulation events");
+
+        // Unregister from camera event
+        Camera.onPreRender -= OnCameraPreRender;
+
+        Debug.Log("[ClothVertexGrabber] Unregistered from all events");
     }
 
     void Update()
@@ -105,6 +119,39 @@ public class ClothVertexGrabber : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.Space))
         {
             StopGrabbing();
+        }
+    }
+
+    void OnCameraPreRender(Camera cam)
+    {
+        // レンダリング直前（MagicaCloth2のClothUpdate後）にメッシュを直接制御
+        if (useDirectMeshControl && isGrabbing && grabbedVertexIndices != null && magicaCloth != null && magicaCloth.IsValid() && isInitialized)
+        {
+            DirectlyControlMeshVertices();
+        }
+    }
+
+    void DirectlyControlMeshVertices()
+    {
+        // ProxyMeshの頂点を直接書き換え（レンダリング直前の最終調整）
+        var proxyMesh = magicaCloth.Process.ProxyMeshContainer.shareVirtualMesh;
+        var positions = proxyMesh.localPositions.GetNativeArray();
+
+        Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPoint.position);
+
+        // 掴んだ頂点の位置を強制的に固定
+        foreach (int vertexIndex in grabbedVertexIndices)
+        {
+            if (vertexIndex < positions.Length)
+            {
+                positions[vertexIndex] = grabPointLocalPos;
+            }
+        }
+
+        // Debug output
+        if (Time.frameCount % 60 == 0)
+        {
+            Debug.Log($"[ClothVertexGrabber] DirectlyControlMeshVertices: Forced {grabbedVertexIndices.Length} vertices to {grabPointLocalPos}");
         }
     }
 
@@ -274,18 +321,25 @@ public class ClothVertexGrabber : MonoBehaviour
         ref var tdata = ref MagicaManager.Team.GetTeamDataRef(teamId);
         var dispPosArray = MagicaManager.Simulation.dispPosArray;
 
+        // VirtualMeshのpositions配列も更新（補間後の最終的なメッシュ位置）
+        var proxyMesh = magicaCloth.Process.ProxyMeshContainer.shareVirtualMesh;
+        var positions = proxyMesh.localPositions.GetNativeArray();
+
         Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPoint.position);
 
         foreach (int vertexIndex in grabbedVertexIndices)
         {
             int particleIndex = tdata.particleChunk.startIndex + vertexIndex;
+
+            // dispPosArrayとpositions配列の両方を更新
             dispPosArray[particleIndex] = grabPointLocalPos;
+            positions[vertexIndex] = grabPointLocalPos;
         }
 
         // Debug output
         if (Time.frameCount % 30 == 0)
         {
-            Debug.Log($"[ClothVertexGrabber] ForceUpdateDisplayPosition: Updated {grabbedVertexIndices.Length} vertices in dispPosArray to {grabPointLocalPos}");
+            Debug.Log($"[ClothVertexGrabber] ForceUpdateDisplayPosition: Updated dispPosArray and positions for {grabbedVertexIndices.Length} vertices to {grabPointLocalPos}, blendWeight={tdata.blendWeight}");
         }
     }
 
