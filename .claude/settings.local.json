@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__UnityMCP__manage_gameobject",
+      "WebFetch(domain:discussions.unity.com)",
+      "mcp__UnityMCP__read_resource"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
