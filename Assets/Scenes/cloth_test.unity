@@ -119,6 +119,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &76210409
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 76210410}
+  m_Layer: 0
+  m_Name: grabpoint3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &76210410
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76210409}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1, y: 0.75, z: -0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &203844586
 GameObject:
   m_ObjectHideFlags: 0
@@ -380,7 +411,7 @@ Transform:
   m_GameObject: {fileID: 883786888}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.751, z: -0.534}
+  m_LocalPosition: {x: 0.578, y: 0.751, z: -0.534}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -680,6 +711,7 @@ MonoBehaviour:
   isGrabbing: 0
   maxGrabbedVertices: 2
   grabSpeed: 10
+  useDirectMeshControl: 1
 --- !u!23 &1135739403 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: -7346013372983455031, guid: 32e1dce1341df7947b08a5572da3f8a2, type: 3}
@@ -1790,6 +1822,37 @@ MonoBehaviour:
   localInertiaProperty: 0
   windInfluenceProperty: 0
   blendWeightProperty: 0
+--- !u!1 &1631382944
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1631382945}
+  m_Layer: 0
+  m_Name: grabpoint2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1631382945
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1631382944}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1, y: 0.75, z: -0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1778308104
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1838,6 +1901,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7346013372983455031, guid: 32e1dce1341df7947b08a5572da3f8a2, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e93e7f50206160c4f8132a22fd43c689, type: 2}
+    - target: {fileID: -7346013372983455031, guid: 32e1dce1341df7947b08a5572da3f8a2, type: 3}
+      propertyPath: 'm_Materials.Array.data[2]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e93e7f50206160c4f8132a22fd43c689, type: 2}
     - target: {fileID: 919132149155446097, guid: 32e1dce1341df7947b08a5572da3f8a2, type: 3}
       propertyPath: m_Name
       value: cape2
@@ -1942,7 +2013,7 @@ MonoBehaviour:
       distanceCullingFadeRatio: 0.2
       distanceCullingReferenceObject: {fileID: 0}
     normalAxis: 1
-    gravity: 2.21
+    gravity: 1.2
     gravityDirection:
       x: 0
       y: -1
@@ -1951,7 +2022,7 @@ MonoBehaviour:
     stablizationTimeAfterReset: 0.052
     blendWeight: 1
     damping:
-      value: 0.05
+      value: 0.1
       useCurve: 0
       curve:
         serializedVersion: 2
@@ -2022,7 +2093,7 @@ MonoBehaviour:
       localRotationSpeedLimit:
         value: 720
         use: 0
-      depthInertia: 0
+      depthInertia: 0.7
       centrifualAcceleration: 0
       particleSpeedLimit:
         value: 4
@@ -2031,7 +2102,7 @@ MonoBehaviour:
       teleportDistance: 0.5
       teleportRotation: 90
     tetherConstraint:
-      distanceCompression: 0.4
+      distanceCompression: 0.5
     distanceConstraint:
       stiffness:
         value: 1
@@ -2065,7 +2136,7 @@ MonoBehaviour:
     angleRestorationConstraint:
       useAngleRestoration: 1
       stiffness:
-        value: 0.071
+        value: 0.001
         useCurve: 1
         curve:
           serializedVersion: 2
@@ -2074,16 +2145,16 @@ MonoBehaviour:
             time: 0
             value: 1
             inSlope: 0
-            outSlope: -0.8
+            outSlope: 0
             tangentMode: 0
             weightedMode: 0
             inWeight: 0
             outWeight: 0
           - serializedVersion: 3
             time: 1
-            value: 0.2
-            inSlope: -0.8
-            outSlope: 0
+            value: 0.09678346
+            inSlope: -0.7
+            outSlope: -0.7
             tangentMode: 0
             weightedMode: 0
             inWeight: 0
@@ -2096,7 +2167,7 @@ MonoBehaviour:
     angleLimitConstraint:
       useAngleLimit: 1
       limitAngle:
-        value: 153
+        value: 69
         useCurve: 1
         curve:
           serializedVersion: 2
@@ -2104,8 +2175,8 @@ MonoBehaviour:
           - serializedVersion: 3
             time: 0
             value: 0
-            inSlope: 0
-            outSlope: 1
+            inSlope: 2
+            outSlope: 2
             tangentMode: 0
             weightedMode: 0
             inWeight: 0
@@ -2113,7 +2184,7 @@ MonoBehaviour:
           - serializedVersion: 3
             time: 1
             value: 1
-            inSlope: 1
+            inSlope: 0
             outSlope: 0
             tangentMode: 0
             weightedMode: 0
@@ -2184,7 +2255,7 @@ MonoBehaviour:
       stiffness: 1
     colliderCollisionConstraint:
       mode: 1
-      friction: 0.05
+      friction: 0.1
       colliderList: []
       collisionBones: []
       limitDistance:
@@ -2215,7 +2286,7 @@ MonoBehaviour:
           m_PostInfinity: 2
           m_RotationOrder: 4
     selfCollisionConstraint:
-      selfMode: 0
+      selfMode: 2
       surfaceThickness:
         value: 0.005
         useCurve: 0
@@ -4192,3 +4263,5 @@ SceneRoots:
   - {fileID: 883786889}
   - {fileID: 996306437}
   - {fileID: 1778308104}
+  - {fileID: 1631382945}
+  - {fileID: 76210410}

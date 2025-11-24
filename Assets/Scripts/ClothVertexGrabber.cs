@@ -1,35 +1,79 @@
 using UnityEngine;
 using MagicaCloth2;
+using System.Collections.Generic;
 
 /// <summary>
-/// MagicaCloth2 Vertex Grabber
-/// - Finds closest 1-2 vertices to grabPoint and temporarily changes them to Fixed attribute
+/// MagicaCloth2 Multi-Point Vertex Grabber
+/// - Supports multiple grab points with individual vertex constraints
+/// - Each grab point can grab specific vertices defined by index ranges
 /// - Fixed vertices are excluded from constraint calculations, preventing oscillation
-/// - Uses OnPreSimulation to update positions and OnPostSimulation to force display position
-/// - Restores original vertex attributes when released
+/// - Uses OnPreSimulation, OnPostSimulation, and Camera.onPreRender for smooth grabbing
 /// </summary>
 public class ClothVertexGrabber : MonoBehaviour
 {
+    [System.Serializable]
+    public class GrabPointInfo
+    {
+        [Header("Grab Point Settings")]
+        public string name = "GrabPoint";
+        public Transform transform;
+        public KeyCode keyCode = KeyCode.Space;
+
+        [Header("Vertex Constraints")]
+        [Tooltip("Indices of vertices that this grab point can grab. Empty = can grab any vertex")]
+        public List<int> allowedVertexIndices = new List<int>();
+
+        [Header("Grab Settings")]
+        public int maxGrabbedVertices = 2;
+
+        [Header("Runtime State (Read Only)")]
+        [SerializeField] private bool isGrabbing = false;
+        [SerializeField] private int[] grabbedVertexIndices = null;
+        [SerializeField] private VertexAttribute[] originalAttributes = null;
+
+        public bool IsGrabbing => isGrabbing;
+        public int[] GrabbedVertexIndices => grabbedVertexIndices;
+        public VertexAttribute[] OriginalAttributes => originalAttributes;
+
+        public void StartGrab(int[] indices, VertexAttribute[] attrs)
+        {
+            isGrabbing = true;
+            grabbedVertexIndices = indices;
+            originalAttributes = attrs;
+        }
+
+        public void StopGrab()
+        {
+            isGrabbing = false;
+            grabbedVertexIndices = null;
+            originalAttributes = null;
+        }
+
+        public bool CanGrabVertex(int vertexIndex)
+        {
+            // If allowedVertexIndices is empty, can grab any vertex
+            if (allowedVertexIndices == null || allowedVertexIndices.Count == 0)
+                return true;
+
+            return allowedVertexIndices.Contains(vertexIndex);
+        }
+    }
+
     [Header("References")]
     [SerializeField] private MagicaCloth magicaCloth;
-    [SerializeField] private Transform grabPoint;
 
-    [Header("Grab Control")]
-    [SerializeField] private bool isGrabbing = false;
-    [SerializeField] private int maxGrabbedVertices = 2;
-    [SerializeField] private float grabSpeed = 10f; // 移動速度（高いほど速い）
+    [Header("Grab Points")]
+    [SerializeField] private GrabPointInfo[] grabPoints = new GrabPointInfo[3];
+
+    [Header("Direct Mesh Control")]
+    [SerializeField] private bool useDirectMeshControl = true;
 
     private bool isInitialized = false;
     private int teamId = -1;
-    private int[] grabbedVertexIndices = null; // 掴んでいる頂点のインデックス
-    private VertexAttribute[] originalAttributes = null; // 元の頂点属性を保存
-
-    [Header("Direct Mesh Control")]
-    [SerializeField] private bool useDirectMeshControl = true; // メッシュを直接制御
 
     void Start()
     {
-        // Auto-find objects if not assigned
+        // Auto-find MagicaCloth if not assigned
         if (magicaCloth == null)
         {
             GameObject cape2 = GameObject.Find("cape2");
@@ -45,47 +89,48 @@ public class ClothVertexGrabber : MonoBehaviour
             }
         }
 
-        if (grabPoint == null)
+        // Auto-find grab points if not assigned
+        for (int i = 0; i < grabPoints.Length; i++)
         {
-            GameObject grabPointObj = GameObject.Find("grabpoint");
-            if (grabPointObj != null)
+            if (grabPoints[i] == null)
             {
-                grabPoint = grabPointObj.transform;
+                grabPoints[i] = new GrabPointInfo();
             }
-            else
+
+            if (grabPoints[i].transform == null)
             {
-                Debug.LogError("[ClothVertexGrabber] grabpoint object not found!");
-                return;
+                string grabPointName = $"grabpoint{i + 1}";
+                GameObject grabPointObj = GameObject.Find(grabPointName);
+                if (grabPointObj != null)
+                {
+                    grabPoints[i].transform = grabPointObj.transform;
+                    grabPoints[i].name = grabPointName;
+                }
+                else
+                {
+                    Debug.LogWarning($"[ClothVertexGrabber] {grabPointName} not found! Please assign manually.");
+                }
             }
         }
 
         // Adjust constraints for vertex grabbing
         var sdata = magicaCloth.SerializeData;
 
-        // Motion Constraint - 無効化（掴んだ頂点がgrabpointまで移動できるように）
-        Debug.Log($"[ClothVertexGrabber] Motion Constraint - useMaxDistance: {sdata.motionConstraint.useMaxDistance}, useBackstop: {sdata.motionConstraint.useBackstop}");
         sdata.motionConstraint.useMaxDistance = false;
         sdata.motionConstraint.useBackstop = false;
-
-        // Tether Constraint - 緩和（初期位置への引き戻しを弱める）
-        Debug.Log($"[ClothVertexGrabber] Tether Constraint distanceCompression before: {sdata.tetherConstraint.distanceCompression}");
-        sdata.tetherConstraint.distanceCompression = 0.0f; // 縮小を無効化
-
-        // Distance Constraint - 有効のまま（隣接頂点が引っ張られるように）
-        Debug.Log($"[ClothVertexGrabber] Distance Constraint stiffness: {sdata.distanceConstraint.stiffness} (keeping enabled for cloth pull)");
-        // stiffnessは変更しない（デフォルトのまま）
+        sdata.tetherConstraint.distanceCompression = 0.0f;
 
         magicaCloth.SetParameterChange();
 
-        Debug.Log($"[ClothVertexGrabber] Initialized - MagicaCloth: {magicaCloth.name}, GrabPoint: {grabPoint.name}");
-        Debug.Log($"[ClothVertexGrabber] Constraints adjusted: Motion/Tether disabled, Distance enabled for cloth pull");
+        Debug.Log($"[ClothVertexGrabber] Initialized - MagicaCloth: {magicaCloth.name}");
+        Debug.Log($"[ClothVertexGrabber] {grabPoints.Length} grab points configured");
     }
 
     void OnEnable()
     {
         // Register to simulation events
-        MagicaManager.OnPreSimulation += UpdateGrabbedVertex;
-        MagicaManager.OnPostSimulation += ForceUpdateDisplayPosition;
+        MagicaManager.OnPreSimulation += UpdateGrabbedVertices;
+        MagicaManager.OnPostSimulation += ForceUpdateDisplayPositions;
 
         // Register to camera pre-render event for direct mesh control
         if (useDirectMeshControl)
@@ -93,14 +138,14 @@ public class ClothVertexGrabber : MonoBehaviour
             Camera.onPreRender += OnCameraPreRender;
         }
 
-        Debug.Log("[ClothVertexGrabber] Registered to OnPreSimulation, OnPostSimulation, and Camera.onPreRender events");
+        Debug.Log("[ClothVertexGrabber] Registered to simulation and render events");
     }
 
     void OnDisable()
     {
         // Unregister from simulation events
-        MagicaManager.OnPreSimulation -= UpdateGrabbedVertex;
-        MagicaManager.OnPostSimulation -= ForceUpdateDisplayPosition;
+        MagicaManager.OnPreSimulation -= UpdateGrabbedVertices;
+        MagicaManager.OnPostSimulation -= ForceUpdateDisplayPositions;
 
         // Unregister from camera event
         Camera.onPreRender -= OnCameraPreRender;
@@ -110,52 +155,59 @@ public class ClothVertexGrabber : MonoBehaviour
 
     void Update()
     {
-        // Space key controls grabbing
-        if (Input.GetKeyDown(KeyCode.Space))
+        // Handle input for each grab point
+        foreach (var grabPoint in grabPoints)
         {
-            StartGrabbing();
-        }
+            if (grabPoint == null || grabPoint.transform == null)
+                continue;
 
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            StopGrabbing();
+            if (Input.GetKeyDown(grabPoint.keyCode))
+            {
+                StartGrabbing(grabPoint);
+            }
+
+            if (Input.GetKeyUp(grabPoint.keyCode))
+            {
+                StopGrabbing(grabPoint);
+            }
         }
     }
 
     void OnCameraPreRender(Camera cam)
     {
-        // レンダリング直前（MagicaCloth2のClothUpdate後）にメッシュを直接制御
-        if (useDirectMeshControl && isGrabbing && grabbedVertexIndices != null && magicaCloth != null && magicaCloth.IsValid() && isInitialized)
+        // Direct mesh control before rendering
+        if (!useDirectMeshControl || !magicaCloth.IsValid() || !isInitialized)
+            return;
+
+        foreach (var grabPoint in grabPoints)
         {
-            DirectlyControlMeshVertices();
+            if (grabPoint != null && grabPoint.IsGrabbing)
+            {
+                DirectlyControlMeshVertices(grabPoint);
+            }
         }
     }
 
-    void DirectlyControlMeshVertices()
+    void DirectlyControlMeshVertices(GrabPointInfo grabPoint)
     {
-        // ProxyMeshの頂点を直接書き換え（レンダリング直前の最終調整）
+        if (grabPoint.GrabbedVertexIndices == null)
+            return;
+
         var proxyMesh = magicaCloth.Process.ProxyMeshContainer.shareVirtualMesh;
         var positions = proxyMesh.localPositions.GetNativeArray();
 
-        Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPoint.position);
+        Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPoint.transform.position);
 
-        // 掴んだ頂点の位置を強制的に固定
-        foreach (int vertexIndex in grabbedVertexIndices)
+        foreach (int vertexIndex in grabPoint.GrabbedVertexIndices)
         {
             if (vertexIndex < positions.Length)
             {
                 positions[vertexIndex] = grabPointLocalPos;
             }
         }
-
-        // Debug output
-        if (Time.frameCount % 60 == 0)
-        {
-            Debug.Log($"[ClothVertexGrabber] DirectlyControlMeshVertices: Forced {grabbedVertexIndices.Length} vertices to {grabPointLocalPos}");
-        }
     }
 
-    void StartGrabbing()
+    void StartGrabbing(GrabPointInfo grabPoint)
     {
         if (!magicaCloth.IsValid())
             return;
@@ -172,25 +224,23 @@ public class ClothVertexGrabber : MonoBehaviour
             Debug.Log($"[ClothVertexGrabber] Initialized with TeamId: {teamId}");
         }
 
-        // Find closest Move vertices to grabPoint
+        // Find closest vertices that this grab point can grab
         var proxyMesh = magicaCloth.Process.ProxyMeshContainer.shareVirtualMesh;
         var attributes = proxyMesh.attributes.GetNativeArray();
-        var localPositions = proxyMesh.localPositions.GetNativeArray();
 
         ref var tdata = ref MagicaManager.Team.GetTeamDataRef(teamId);
         var basePosArray = MagicaManager.Simulation.basePosArray;
 
-        // grabpointのローカル座標
-        Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPoint.position);
+        Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPoint.transform.position);
 
-        // 距離とインデックスのリスト
-        var candidates = new System.Collections.Generic.List<(int index, float distance)>();
+        // Find candidate vertices
+        var candidates = new List<(int index, float distance)>();
 
         int particleIndex = tdata.particleChunk.startIndex;
         for (int i = 0; i < tdata.particleChunk.dataLength; i++, particleIndex++)
         {
             var attr = attributes[i];
-            if (attr.IsMove())
+            if (attr.IsMove() && grabPoint.CanGrabVertex(i))
             {
                 Vector3 vertexPos = basePosArray[particleIndex];
                 float distance = Vector3.Distance(vertexPos, grabPointLocalPos);
@@ -198,183 +248,147 @@ public class ClothVertexGrabber : MonoBehaviour
             }
         }
 
-        // 距離でソートして最も近い頂点を選択
+        if (candidates.Count == 0)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] {grabPoint.name}: No grabbable vertices found!");
+            return;
+        }
+
+        // Sort by distance and select closest vertices
         candidates.Sort((a, b) => a.distance.CompareTo(b.distance));
 
-        int numToGrab = Mathf.Min(maxGrabbedVertices, candidates.Count);
-        grabbedVertexIndices = new int[numToGrab];
-        originalAttributes = new VertexAttribute[numToGrab];
+        int numToGrab = Mathf.Min(grabPoint.maxGrabbedVertices, candidates.Count);
+        int[] grabbedIndices = new int[numToGrab];
+        VertexAttribute[] originalAttrs = new VertexAttribute[numToGrab];
 
-        // 頂点を選択し、Fixed属性に変更（制約計算から除外）
+        // Change vertices to Fixed attribute
         for (int i = 0; i < numToGrab; i++)
         {
             int vertexIndex = candidates[i].index;
-            grabbedVertexIndices[i] = vertexIndex;
-
-            // 元の属性を保存
-            originalAttributes[i] = attributes[vertexIndex];
-
-            // Fixed属性に変更（制約計算から除外される）
+            grabbedIndices[i] = vertexIndex;
+            originalAttrs[i] = attributes[vertexIndex];
             attributes[vertexIndex] = VertexAttribute.Fixed;
-
-            Debug.Log($"[ClothVertexGrabber] Vertex {vertexIndex} changed to Fixed attribute (was {originalAttributes[i]})");
         }
 
-        // NativeArrayへの変更は自動的にExSimpleNativeArrayに反映される
-        isGrabbing = true;
-        Debug.Log($"[ClothVertexGrabber] Grabbing started - {numToGrab} vertices changed to Fixed attribute (excluded from constraints)");
+        grabPoint.StartGrab(grabbedIndices, originalAttrs);
+        Debug.Log($"[ClothVertexGrabber] {grabPoint.name} grabbed {numToGrab} vertices (key: {grabPoint.keyCode})");
     }
 
-    void StopGrabbing()
+    void StopGrabbing(GrabPointInfo grabPoint)
     {
-        // 元の属性に戻す
-        if (grabbedVertexIndices != null && originalAttributes != null && magicaCloth != null && magicaCloth.IsValid())
+        if (!grabPoint.IsGrabbing || !magicaCloth.IsValid())
+            return;
+
+        // Restore original attributes
+        var proxyMesh = magicaCloth.Process.ProxyMeshContainer.shareVirtualMesh;
+        var attributes = proxyMesh.attributes.GetNativeArray();
+
+        var indices = grabPoint.GrabbedVertexIndices;
+        var originalAttrs = grabPoint.OriginalAttributes;
+
+        for (int i = 0; i < indices.Length; i++)
         {
-            var proxyMesh = magicaCloth.Process.ProxyMeshContainer.shareVirtualMesh;
-            var attributes = proxyMesh.attributes.GetNativeArray();
-
-            for (int i = 0; i < grabbedVertexIndices.Length; i++)
-            {
-                int vertexIndex = grabbedVertexIndices[i];
-                VertexAttribute originalAttr = originalAttributes[i];
-
-                // 元の属性に復元
-                attributes[vertexIndex] = originalAttr;
-
-                Debug.Log($"[ClothVertexGrabber] Vertex {vertexIndex} restored to {originalAttr} attribute");
-            }
-
-            // NativeArrayへの変更は自動的にExSimpleNativeArrayに反映される
+            attributes[indices[i]] = originalAttrs[i];
         }
 
-        isGrabbing = false;
-        grabbedVertexIndices = null;
-        originalAttributes = null;
-        Debug.Log("[ClothVertexGrabber] Grabbing released - attributes restored");
+        grabPoint.StopGrab();
+        Debug.Log($"[ClothVertexGrabber] {grabPoint.name} released");
     }
 
-    void UpdateGrabbedVertex()
+    void UpdateGrabbedVertices()
     {
-        // Skip if not grabbing or not valid
-        if (!isGrabbing || magicaCloth == null || grabPoint == null || grabbedVertexIndices == null)
-        {
-            return;
-        }
-
-        // Wait for MagicaCloth to be valid
-        if (!magicaCloth.IsValid())
+        if (!magicaCloth.IsValid() || !isInitialized)
             return;
 
-        // Initialize team ID on first valid frame
-        if (!isInitialized)
-        {
-            var clothProcess = magicaCloth.Process;
-            if (clothProcess == null)
-                return;
-
-            teamId = clothProcess.TeamId;
-            isInitialized = true;
-            Debug.Log($"[ClothVertexGrabber] Initialized with TeamId: {teamId}");
-        }
-
-        // Get team data
         ref var tdata = ref MagicaManager.Team.GetTeamDataRef(teamId);
-
-        // Get particle arrays
         var basePosArray = MagicaManager.Simulation.basePosArray;
         var nextPosArray = MagicaManager.Simulation.nextPosArray;
         var oldPosArray = MagicaManager.Simulation.oldPosArray;
         var velocityArray = MagicaManager.Simulation.velocityArray;
 
-        // Convert grabPoint world position to cloth local space
-        Vector3 grabPointWorldPos = grabPoint.position;
-        Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPointWorldPos);
-
-        // Update Fixed vertices position
-        // Fixed属性なので制約計算から除外され、強制的にgrabpointに追従
-        foreach (int vertexIndex in grabbedVertexIndices)
+        foreach (var grabPoint in grabPoints)
         {
-            int particleIndex = tdata.particleChunk.startIndex + vertexIndex;
+            if (grabPoint == null || !grabPoint.IsGrabbing || grabPoint.transform == null)
+                continue;
 
-            // すべての位置配列を更新して振動を防ぐ
-            basePosArray[particleIndex] = grabPointLocalPos;  // 基準位置
-            nextPosArray[particleIndex] = grabPointLocalPos;  // 現在位置
-            oldPosArray[particleIndex] = grabPointLocalPos;   // 前フレーム位置
+            Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPoint.transform.position);
 
-            // 速度をゼロにして慣性による振動を防ぐ
-            velocityArray[particleIndex] = Vector3.zero;
-        }
+            foreach (int vertexIndex in grabPoint.GrabbedVertexIndices)
+            {
+                int particleIndex = tdata.particleChunk.startIndex + vertexIndex;
 
-        // Debug output
-        if (Time.frameCount % 30 == 0)
-        {
-            Debug.Log($"[ClothVertexGrabber] Updating {grabbedVertexIndices.Length} Fixed vertices (no constraint conflict), target: {grabPointLocalPos}");
+                basePosArray[particleIndex] = grabPointLocalPos;
+                nextPosArray[particleIndex] = grabPointLocalPos;
+                oldPosArray[particleIndex] = grabPointLocalPos;
+                velocityArray[particleIndex] = Vector3.zero;
+            }
         }
     }
 
-    void ForceUpdateDisplayPosition()
+    void ForceUpdateDisplayPositions()
     {
-        // OnPostSimulation: シミュレーション完了後、表示位置を強制的に更新
-        if (!isGrabbing || grabbedVertexIndices == null || !magicaCloth.IsValid() || !isInitialized)
+        if (!magicaCloth.IsValid() || !isInitialized)
             return;
 
         ref var tdata = ref MagicaManager.Team.GetTeamDataRef(teamId);
         var dispPosArray = MagicaManager.Simulation.dispPosArray;
 
-        // VirtualMeshのpositions配列も更新（補間後の最終的なメッシュ位置）
         var proxyMesh = magicaCloth.Process.ProxyMeshContainer.shareVirtualMesh;
         var positions = proxyMesh.localPositions.GetNativeArray();
 
-        Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPoint.position);
-
-        foreach (int vertexIndex in grabbedVertexIndices)
+        foreach (var grabPoint in grabPoints)
         {
-            int particleIndex = tdata.particleChunk.startIndex + vertexIndex;
+            if (grabPoint == null || !grabPoint.IsGrabbing || grabPoint.transform == null)
+                continue;
 
-            // dispPosArrayとpositions配列の両方を更新
-            dispPosArray[particleIndex] = grabPointLocalPos;
-            positions[vertexIndex] = grabPointLocalPos;
-        }
+            Vector3 grabPointLocalPos = magicaCloth.ClothTransform.InverseTransformPoint(grabPoint.transform.position);
 
-        // Debug output
-        if (Time.frameCount % 30 == 0)
-        {
-            Debug.Log($"[ClothVertexGrabber] ForceUpdateDisplayPosition: Updated dispPosArray and positions for {grabbedVertexIndices.Length} vertices to {grabPointLocalPos}, blendWeight={tdata.blendWeight}");
+            foreach (int vertexIndex in grabPoint.GrabbedVertexIndices)
+            {
+                int particleIndex = tdata.particleChunk.startIndex + vertexIndex;
+
+                dispPosArray[particleIndex] = grabPointLocalPos;
+                positions[vertexIndex] = grabPointLocalPos;
+            }
         }
     }
 
     void OnDrawGizmos()
     {
-        if (!Application.isPlaying || grabPoint == null)
+        if (!Application.isPlaying)
             return;
 
-        // Draw grabPoint location
-        Gizmos.color = isGrabbing ? Color.red : Color.yellow;
-        Gizmos.DrawWireSphere(grabPoint.position, 0.1f);
-
-        if (isGrabbing)
+        foreach (var grabPoint in grabPoints)
         {
-            Gizmos.DrawSphere(grabPoint.position, 0.05f);
+            if (grabPoint == null || grabPoint.transform == null)
+                continue;
 
-            // Draw grabbed vertices using dispPosArray (actual display position)
-            if (grabbedVertexIndices != null && magicaCloth != null && magicaCloth.IsValid() && isInitialized)
+            // Draw grab point location
+            Gizmos.color = grabPoint.IsGrabbing ? Color.red : Color.yellow;
+            Gizmos.DrawWireSphere(grabPoint.transform.position, 0.1f);
+
+            if (grabPoint.IsGrabbing)
             {
-                ref var tdata = ref MagicaManager.Team.GetTeamDataRef(teamId);
-                var dispPosArray = MagicaManager.Simulation.dispPosArray;
+                Gizmos.DrawSphere(grabPoint.transform.position, 0.05f);
 
-                Gizmos.color = Color.cyan;
-                foreach (int vertexIndex in grabbedVertexIndices)
+                // Draw grabbed vertices
+                if (grabPoint.GrabbedVertexIndices != null && magicaCloth != null && magicaCloth.IsValid() && isInitialized)
                 {
-                    int particleIndex = tdata.particleChunk.startIndex + vertexIndex;
-                    Vector3 localPos = dispPosArray[particleIndex];
-                    Vector3 worldPos = magicaCloth.ClothTransform.TransformPoint(localPos);
+                    ref var tdata = ref MagicaManager.Team.GetTeamDataRef(teamId);
+                    var dispPosArray = MagicaManager.Simulation.dispPosArray;
 
-                    Gizmos.DrawSphere(worldPos, 0.03f);
-                    Gizmos.DrawLine(worldPos, grabPoint.position);
+                    Gizmos.color = Color.cyan;
+                    foreach (int vertexIndex in grabPoint.GrabbedVertexIndices)
+                    {
+                        int particleIndex = tdata.particleChunk.startIndex + vertexIndex;
+                        Vector3 localPos = dispPosArray[particleIndex];
+                        Vector3 worldPos = magicaCloth.ClothTransform.TransformPoint(localPos);
+
+                        Gizmos.DrawSphere(worldPos, 0.03f);
+                        Gizmos.DrawLine(worldPos, grabPoint.transform.position);
+                    }
                 }
             }
         }
     }
 }
-
-
