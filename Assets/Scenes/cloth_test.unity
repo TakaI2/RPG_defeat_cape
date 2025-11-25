@@ -128,6 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 76210410}
+  - component: {fileID: 76210411}
   m_Layer: 0
   m_Name: grabpoint3
   m_TagString: Untagged
@@ -144,12 +145,26 @@ Transform:
   m_GameObject: {fileID: 76210409}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1, y: 0.75, z: -0.5}
+  m_LocalPosition: {x: -0.843, y: 1.122, z: -0.053}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &76210411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76210409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5147eeca25afad047a191891e5264b39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 1
+  moveDistance: 2
 --- !u!1 &203844586
 GameObject:
   m_ObjectHideFlags: 0
@@ -395,8 +410,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 883786889}
+  - component: {fileID: 883786890}
   m_Layer: 0
-  m_Name: grabpoint
+  m_Name: grabpoint1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -410,13 +426,27 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 883786888}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.578, y: 0.751, z: -0.534}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.011, y: 0.512, z: -0.946}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &883786890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 883786888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5147eeca25afad047a191891e5264b39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 1
+  moveDistance: 2
 --- !u!1 &924128085
 GameObject:
   m_ObjectHideFlags: 0
@@ -707,10 +737,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   magicaCloth: {fileID: 0}
-  grabPoint: {fileID: 0}
-  isGrabbing: 0
-  maxGrabbedVertices: 2
-  grabSpeed: 10
+  clothRootTransform: {fileID: 0}
+  grabPoints:
+  - name: GrabPoint1
+    transform: {fileID: 883786889}
+    keyCode: 32
+    allowedVertexIndices: 
+    maxGrabbedVertices: 2
+    isGrabbing: 0
+    grabbedVertexIndices: 
+    originalAttributes: []
+  - name: GrabPoint2
+    transform: {fileID: 1631382945}
+    keyCode: 120
+    allowedVertexIndices: 
+    maxGrabbedVertices: 2
+    isGrabbing: 0
+    grabbedVertexIndices: 
+    originalAttributes: []
+  - name: GrabPoint3
+    transform: {fileID: 76210410}
+    keyCode: 122
+    allowedVertexIndices: 
+    maxGrabbedVertices: 2
+    isGrabbing: 0
+    grabbedVertexIndices: 
+    originalAttributes: []
   useDirectMeshControl: 1
 --- !u!23 &1135739403 stripped
 MeshRenderer:
@@ -1831,6 +1883,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1631382945}
+  - component: {fileID: 1631382946}
   m_Layer: 0
   m_Name: grabpoint2
   m_TagString: Untagged
@@ -1847,12 +1900,26 @@ Transform:
   m_GameObject: {fileID: 1631382944}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0.75, z: -0.5}
+  m_LocalPosition: {x: 0.713, y: 1.127, z: 0.013}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1631382946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1631382944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5147eeca25afad047a191891e5264b39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 1
+  moveDistance: 2
 --- !u!1001 &1778308104
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1901,6 +1968,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7346013372983455031, guid: 32e1dce1341df7947b08a5572da3f8a2, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e93e7f50206160c4f8132a22fd43c689, type: 2}
     - target: {fileID: -7346013372983455031, guid: 32e1dce1341df7947b08a5572da3f8a2, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
@@ -4260,8 +4331,8 @@ SceneRoots:
   - {fileID: 203844589}
   - {fileID: 394179564}
   - {fileID: 924128089}
-  - {fileID: 883786889}
   - {fileID: 996306437}
   - {fileID: 1778308104}
+  - {fileID: 883786889}
   - {fileID: 1631382945}
   - {fileID: 76210410}

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Project Overview
 
-This is a Unity 6000.0.46f1 Mixed Reality project for fire simulation using Meta XR MR Utility Kit. The project targets Meta Quest devices with OpenXR support and utilizes Universal Render Pipeline (URP).
+This is a Unity 6000.0.46f1 RPG project focusing on cloth physics using MagicaCloth2. The project demonstrates advanced cloth grabbing systems with multi-point vertex control and uses Universal Render Pipeline (URP).
 
 # Guidelines
 
@@ -14,7 +14,7 @@ This document defines the project's rules, objectives, and progress management m
 
 - To maximize efficiency, **if you need to execute multiple independent processes, invoke those tools concurrently, not sequentially**.
 - **You must think exclusively in English**. However, you are required to **respond in Japanese**.
-- To understand how to use a library, **always use the Contex7 MCP** to retrieve the latest information.
+- To understand how to use a library, **always use the Context7 MCP** to retrieve the latest information.
 - For temporary notes for design, create a markdown in `.tmp` and save it.
 - **After using Write or Edit tools, ALWAYS verify the actual file contents using the Read tool**, regardless of what the system-reminder says. The system-reminder may incorrectly show "(no content)" even when the file has been successfully written.
 - Please respond critically and without pandering to my opinions, but please don't be forceful in your criticism.
@@ -22,42 +22,60 @@ This document defines the project's rules, objectives, and progress management m
 ## Unity Project Structure
 
 ### Key Directories
-- `Assets/Script/` - Main C# scripts for fire simulation and MR interactions
-- `Assets/Scenes/` - Unity scenes: `SampleScene.unity`, `firescene.unity`, `FireDistinguish.unity`
-- `Packages/` - Unity packages including Meta XR MR Utility Kit (`com.meta.xr.mrutilitykit`)
+- `Assets/Scripts/` - Main C# scripts for RPG and cloth grabbing systems
+- `Assets/Scenes/` - Unity scenes: `SampleScene.unity`, `game1.unity`, `Big_Scene.unity`, `cloth_test.unity`
+- `Packages/` - Unity packages including Unity MCP
 - `.tmp/` - Temporary design documentation
 
 ### Core Scripts Architecture
-- **FlameController.cs** - Manages flame placement using controller raycasting. Handles OVRInput for left controller trigger, spawns flame on floor, and delays smoke spawn at ceiling height
-- **FlameAndSmokeManager.cs** - Integrates with MRUK (Mixed Reality Utility Kit) to detect floor/ceiling anchors. Provides ceiling Y-coordinate for smoke positioning via `HasCeilingAnchor()` method. Listens to `MRUK.Instance.SceneLoadedEvent`
-- **Particle Controllers** - Various scripts for flame growth, smoke expansion, audio, and damage simulation
+
+#### Cloth Physics (MagicaCloth2)
+- **ClothVertexGrabber.cs** - Advanced multi-point vertex grabbing system with individual constraints
+  - Supports multiple grab points with individual vertex constraints
+  - Each grab point can grab specific vertices defined by index ranges
+  - Fixed vertices are excluded from constraint calculations, preventing oscillation
+  - Uses OnPreSimulation, OnPostSimulation, and Camera.onPreRender for smooth grabbing
+- **ClothGrabber.cs** - Sphere collider-based cloth grabbing system
+  - Grabs cloth by sandwiching vertices between two sphere colliders
+- **GrabPointMover.cs** - Grab point movement controller
+
+#### RPG Core
+- **PlayerController.cs** - Player character control
+- **PlayerAttack.cs** - Player attack system
+- **EnemyController.cs** - Enemy AI and behavior
+- **EnemySpawner.cs** - Enemy spawn management
+- **Projectile.cs** - Projectile physics and behavior
+- **GameManager.cs** - Game state management
+- **UIManager.cs** - UI control
+- **ObjectPool.cs** - Object pooling for performance
+
+#### Testing
+- **TestScript1.cs**, **TestScript2.cs** - Various test scripts
 
 ### Unity-Specific Commands
 
 **Opening the Project:**
 - Open Unity Hub, add project, and open with Unity 6000.0.46f1
 
-**Building for Meta Quest:**
-- File > Build Settings > Android platform
-- Player Settings: Configure XR Plugin Management for OpenXR
-- Build and deploy to Meta Quest device
-
-**Testing in Unity Editor:**
-- Play mode requires XR simulator or connected Meta Quest device
-- Scripts depend on MRUK anchors (floor/ceiling detection)
+**Testing Cloth Grabbing:**
+- Open `cloth_test.unity` scene
+- Press Space key (or configured keys) to grab cloth vertices
+- Multiple grab points can be used simultaneously
 
 ## Programming Rules
 
 ### C# Conventions
 - Use Unity's serialization with `[SerializeField]` for inspector-exposed fields
-- Leverage Unity's coroutines for delayed operations (e.g., `SpawnSmokeAfterDelay`)
-- Check for null references before `Instantiate`/`Destroy` operations
-- Use Unity's layer mask system for raycasting (e.g., `floorLayer`)
+- Leverage Unity's event system (OnPreSimulation, OnPostSimulation) for cloth physics
+- Check for null references before operations
+- Use meaningful variable names and add XML documentation comments
 
-### MR Utility Kit Integration
-- Always wait for `MRUK.Instance.SceneLoadedEvent` before accessing anchors
-- Use bitflag checks for anchor labels: `(anchor.Label & MRUKAnchor.SceneLabels.FLOOR) != 0`
-- Implement fallback behaviors when anchors are not detected
+### MagicaCloth2 Integration
+- Always wait for cloth initialization before accessing properties
+- Use `MagicaManager` events for simulation updates
+- Use `Camera.onPreRender` for direct mesh control to prevent vibration
+- Set vertices to `VertexAttribute.Fixed` when grabbing to exclude from simulation
+- Restore original attributes when releasing
 
 ### General Rules
 - Avoid hard-coding values unless absolutely necessary
