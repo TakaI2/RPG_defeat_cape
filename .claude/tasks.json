@@ -2,7 +2,7 @@
   "project": {
     "name": "RPG_defete - Cloth Physics",
     "startDate": "2025-11-01",
-    "currentVersion": "v0.4.4",
+    "currentVersion": "v0.4.5",
     "currentPhase": "Cloth Physics Prototyping"
   },
   "phases": [
@@ -197,14 +197,21 @@
       "completedDate": "2025-11-25",
       "actualHours": 3,
       "notes": "ClothVertexGrabberに公開API追加（StartGrabbingAtPoint, StopGrabbingAtPoint, Toggle等）。ClothGrabControllerサンプルスクリプト作成。アニメーションイベント、Timeline、他スクリプトからの制御に対応。詳細ガイド作成"
+    },
+    {
+      "id": "completed-014",
+      "title": "v0.4.5: 振動軽減機能とパフォーマンス監視",
+      "completedDate": "2025-11-25",
+      "actualHours": 4,
+      "notes": "周辺頂点も一緒にグラブする機能実装（includeNeighborVertices, neighborDepth）。メッシュトライアングルから頂点接続グラフ構築。隣接頂点の自動検出アルゴリズム実装。SimplePerformanceMonitorスクリプト作成。振動が大幅に改善"
     }
   ],
   "metrics": {
     "totalEstimatedHours": 52,
-    "totalActualHours": 58.5,
-    "completedTasks": 13,
+    "totalActualHours": 62.5,
+    "completedTasks": 14,
     "pendingTasks": 5,
-    "overallProgress": 72
+    "overallProgress": 74
   },
   "knownIssues": [
     {

@@ -1,6 +1,6 @@
 # プロジェクトステータス
 
-最終更新: 2025-11-25 (v0.4.4)
+最終更新: 2025-11-25 (v0.4.5)
 
 ---
 
@@ -13,7 +13,7 @@
 | Unity バージョン | 6000.0.46f1 |
 | レンダーパイプライン | Universal Render Pipeline (URP) v17.0.4 |
 | プロジェクトタイプ | RPG with Advanced Cloth Physics |
-| 現在のバージョン | v0.4.4 |
+| 現在のバージョン | v0.4.5 |
 | 開発段階 | Cloth Physics Prototyping |
 
 ---
@@ -86,7 +86,7 @@
 - [x] 保存ステータス表示（最終保存時刻、割り当て頂点数）
 - [x] `Assets/Editor/ClothVertexAssignments.asset`への永続化
 
-#### v0.4.4 (外部制御API) - **最新**
+#### v0.4.4 (外部制御API)
 - [x] ClothVertexGrabberに外部制御用公開API追加
 - [x] インデックスと名前による制御メソッド実装
 - [x] アニメーションイベント対応
@@ -95,9 +95,18 @@
 - [x] アニメーション統合のためのToggle機能
 - [x] グラブ状態確認メソッド追加
 
+#### v0.4.5 (振動軽減・パフォーマンス) - **最新**
+- [x] 周辺頂点も一緒にグラブする機能実装（振動軽減）
+- [x] メッシュトライアングルから頂点接続情報を構築
+- [x] `includeNeighborVertices`オプション追加（デフォルト: true）
+- [x] `neighborDepth`パラメータ追加（1-3で調整可能）
+- [x] 隣接頂点の自動検出アルゴリズム実装
+- [x] SimplePerformanceMonitorスクリプト作成（FPS監視）
+- [x] パフォーマンス分析ドキュメント作成
+
 ### 🚧 現在の課題
 
-- パフォーマンス最適化（多数の頂点処理）
+- グラブ時の振動完全解消（MagicaCloth2パラメータ調整で改善可能）
 - VRコントローラー統合（現在はキーボード入力）
 - RPGゲームプレイへの統合
 
@@ -107,6 +116,8 @@
 
 ### ⏳ 今後の予定
 
+- [ ] パフォーマンステスト（SimplePerformanceMonitorでFPS確認）
+- [ ] MagicaCloth2パラメータの最適値探索（Damping, Distance Stiffness等）
 - [ ] VRコントローラー対応
 - [ ] RPGキャラクターシステムとの統合
 - [ ] 布グラビングを活用したゲームプレイ要素
@@ -131,6 +142,8 @@ RPG_defete/
 │   │   │   ├── GrabPointMover.cs      # グラブポイント制御
 │   │   │   ├── RandomGrabPointMover.cs # グラブポイントランダム移動（テスト用）
 │   │   │   └── ClothGrabController.cs # アニメーション連携用コントローラ
+│   │   ├── Debug/
+│   │   │   └── SimplePerformanceMonitor.cs # FPS/パフォーマンスモニター
 │   │   ├── RPG Core/
 │   │   │   ├── PlayerController.cs    # プレイヤー制御
 │   │   │   ├── PlayerAttack.cs        # プレイヤー攻撃
@@ -200,13 +213,14 @@ RPG_defete/
 
 ## 主要スクリプト概要
 
-### ClothVertexGrabber.cs (v0.4.0)
+### ClothVertexGrabber.cs (v0.4.5)
 
-**マルチポイント頂点グラビングシステム**
+**マルチポイント頂点グラビングシステム（振動軽減機能付き）**
 
 #### 主要機能
 - 複数のグラブポイントを同時に制御
 - 各グラブポイントに個別の頂点インデックス制約
+- **周辺頂点も一緒にグラブして振動を軽減**（v0.4.5新機能）
 - Fixed属性設定による振動防止
 - 3つのイベントフックによるスムーズな制御：
   - `OnPreSimulation`: グラブした頂点の位置更新
@@ -220,6 +234,8 @@ RPG_defete/
 - keyCode: グラブ操作のキー
 - allowedVertexIndices: グラブ可能な頂点インデックスのリスト（空の場合は全頂点）
 - maxGrabbedVertices: 最大グラブ頂点数
+- includeNeighborVertices: 周辺頂点も含めるか（デフォルト: true）【v0.4.5新機能】
+- neighborDepth: 隣接頂点の深さ（1-3、デフォルト: 1）【v0.4.5新機能】
 ```
 
 #### 使用方法
@@ -304,3 +320,4 @@ dedc590 - Add double-sided glossy cloth shader and materials
 | 2025-11-25 | v0.4.2リリース（視覚的頂点選択ツール実装、ClothVertexGrabberEditor追加） |
 | 2025-11-25 | v0.4.3リリース（頂点割り当て永続化システム、ScriptableObject実装） |
 | 2025-11-25 | v0.4.4リリース（外部制御API追加、アニメーション連携対応、ClothGrabController実装） |
+| 2025-11-25 | v0.4.5リリース（周辺頂点グラブ機能で振動軽減、パフォーマンスモニター追加） |

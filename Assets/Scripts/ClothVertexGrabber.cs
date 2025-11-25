@@ -26,6 +26,14 @@ public class ClothVertexGrabber : MonoBehaviour
         [Header("Grab Settings")]
         public int maxGrabbedVertices = 2;
 
+        [Header("Neighbor Vertices")]
+        [Tooltip("Include neighboring vertices when grabbing to reduce vibration")]
+        public bool includeNeighborVertices = true;
+
+        [Tooltip("How many layers of neighbors to include (1=direct neighbors, 2=neighbors of neighbors, etc.)")]
+        [Range(1, 3)]
+        public int neighborDepth = 1;
+
         [Header("Runtime State (Read Only)")]
         [SerializeField] private bool isGrabbing = false;
         [SerializeField] private int[] grabbedVertexIndices = null;
@@ -69,6 +77,33 @@ public class ClothVertexGrabber : MonoBehaviour
     [Header("Direct Mesh Control")]
     [SerializeField] private bool useDirectMeshControl = true;
 
+    [Header("Cloth Physics Parameters")]
+    [Tooltip("Adjust these to reduce vibration when grabbing")]
+    [SerializeField] private bool customizePhysicsParameters = false;
+
+    [Header("Damping (減衰)")]
+    [Tooltip("Position damping - higher values reduce vibration (0-1)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float positionDamping = 0.5f;
+
+    [Tooltip("Rotation damping - higher values reduce rotation vibration (0-1)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float rotationDamping = 0.3f;
+
+    [Header("Distance Constraint (距離制約)")]
+    [Tooltip("Stiffness of distance constraint - lower values are softer (0-1)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float distanceStiffness = 0.3f;
+
+    [Header("Inertia Constraint (慣性制約)")]
+    [Tooltip("World inertia - how much the cloth follows world movement (0-1)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float worldInertia = 0.3f;
+
+    [Tooltip("Depth inertia - affects depth direction movement (0-1)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float depthInertia = 0.3f;
+
     private bool isInitialized = false;
     private int teamId = -1;
     private Transform activeClothTransform; // The transform to use for coordinate conversion
@@ -78,6 +113,9 @@ public class ClothVertexGrabber : MonoBehaviour
     private Quaternion initialClothRotation;
     private Vector3 initialClothScale;
     private Matrix4x4 initialClothWorldToLocal;
+
+    // Cache for vertex connectivity (built from mesh triangles)
+    private Dictionary<int, HashSet<int>> vertexConnectivity = null;
 
     void Start()
     {
@@ -148,17 +186,26 @@ public class ClothVertexGrabber : MonoBehaviour
         Debug.Log($"  Scale: {initialClothScale}");
 
         // Adjust constraints for vertex grabbing
-        var sdata = magicaCloth.SerializeData;
-
-        sdata.motionConstraint.useMaxDistance = false;
-        sdata.motionConstraint.useBackstop = false;
-        sdata.tetherConstraint.distanceCompression = 0.0f;
-
-        magicaCloth.SetParameterChange();
+        if (customizePhysicsParameters)
+        {
+            ApplyPhysicsParameters();
+        }
+        else
+        {
+            // Default settings (original implementation)
+            var sdata = magicaCloth.SerializeData;
+            sdata.motionConstraint.useMaxDistance = false;
+            sdata.motionConstraint.useBackstop = false;
+            sdata.tetherConstraint.distanceCompression = 0.0f;
+            magicaCloth.SetParameterChange();
+        }
 
         Debug.Log($"[ClothVertexGrabber] Initialized - MagicaCloth: {magicaCloth.name}");
         Debug.Log($"[ClothVertexGrabber] {grabPoints.Length} grab points configured");
         Debug.Log($"[ClothVertexGrabber] Active Cloth Transform: {activeClothTransform.name} at {activeClothTransform.position}");
+
+        // Build vertex connectivity for neighbor grabbing
+        BuildVertexConnectivity();
     }
 
     void OnEnable()
@@ -311,28 +358,71 @@ public class ClothVertexGrabber : MonoBehaviour
         candidates.Sort((a, b) => a.distance.CompareTo(b.distance));
 
         int numToGrab = Mathf.Min(grabPoint.maxGrabbedVertices, candidates.Count);
-        int[] grabbedIndices = new int[numToGrab];
-        VertexAttribute[] originalAttrs = new VertexAttribute[numToGrab];
 
-        Debug.Log($"  Grabbing {numToGrab} closest vertices:");
+        // Collect vertex indices to grab (including neighbors if enabled)
+        HashSet<int> verticesToGrab = new HashSet<int>();
 
-        // Change vertices to Fixed attribute
+        // Add the closest vertices
         for (int i = 0; i < numToGrab; i++)
         {
-            int vertexIndex = candidates[i].index;
+            verticesToGrab.Add(candidates[i].index);
+        }
+
+        // Add neighboring vertices if enabled
+        if (grabPoint.includeNeighborVertices && vertexConnectivity != null)
+        {
+            HashSet<int> coreVertices = new HashSet<int>(verticesToGrab);
+
+            foreach (int vertexIndex in coreVertices)
+            {
+                HashSet<int> neighbors = GetNeighborVertices(vertexIndex, grabPoint.neighborDepth);
+
+                foreach (int neighborIndex in neighbors)
+                {
+                    // Check if neighbor is allowed to be grabbed
+                    var attr = attributes[neighborIndex];
+                    if (attr.IsMove() && grabPoint.CanGrabVertex(neighborIndex))
+                    {
+                        verticesToGrab.Add(neighborIndex);
+                    }
+                }
+            }
+
+            Debug.Log($"  Including neighbors: {coreVertices.Count} core vertices -> {verticesToGrab.Count} total vertices (depth: {grabPoint.neighborDepth})");
+        }
+
+        int[] grabbedIndices = new int[verticesToGrab.Count];
+        VertexAttribute[] originalAttrs = new VertexAttribute[verticesToGrab.Count];
+
+        Debug.Log($"  Grabbing {verticesToGrab.Count} vertices (core: {numToGrab}, neighbors: {verticesToGrab.Count - numToGrab}):");
+
+        // Change vertices to Fixed attribute
+        int idx = 0;
+        foreach (int vertexIndex in verticesToGrab)
+        {
             int particleIdx = tdata.particleChunk.startIndex + vertexIndex;
             Vector3 vertexLocalPos = basePosArray[particleIdx];
             Vector3 vertexWorldPos = InitialClothLocalToWorld(vertexLocalPos);
 
-            grabbedIndices[i] = vertexIndex;
-            originalAttrs[i] = attributes[vertexIndex];
+            grabbedIndices[idx] = vertexIndex;
+            originalAttrs[idx] = attributes[vertexIndex];
             attributes[vertexIndex] = VertexAttribute.Fixed;
 
-            Debug.Log($"    [{i}] Vertex {vertexIndex}: Local: {vertexLocalPos}, World: {vertexWorldPos}, Distance: {candidates[i].distance:F3}");
+            // Only log first few for brevity
+            if (idx < 5)
+            {
+                Debug.Log($"    [{idx}] Vertex {vertexIndex}: Local: {vertexLocalPos}, World: {vertexWorldPos}");
+            }
+            idx++;
+        }
+
+        if (verticesToGrab.Count > 5)
+        {
+            Debug.Log($"    ... and {verticesToGrab.Count - 5} more vertices");
         }
 
         grabPoint.StartGrab(grabbedIndices, originalAttrs);
-        Debug.Log($"[ClothVertexGrabber] {grabPoint.name} grabbed {numToGrab} vertices (key: {grabPoint.keyCode})");
+        Debug.Log($"[ClothVertexGrabber] {grabPoint.name} grabbed {verticesToGrab.Count} total vertices ({numToGrab} core + {verticesToGrab.Count - numToGrab} neighbors)");
     }
 
     void StopGrabbing(GrabPointInfo grabPoint)
@@ -491,6 +581,163 @@ public class ClothVertexGrabber : MonoBehaviour
     {
         return grabPoints;
     }
+
+    #region Physics Parameters
+
+    /// <summary>
+    /// Apply custom physics parameters to MagicaCloth2
+    /// This can help reduce vibration when grabbing vertices
+    /// NOTE: MagicaCloth2's parameter system is complex.
+    /// For now, adjust parameters directly in MagicaCloth component's Inspector.
+    /// </summary>
+    void ApplyPhysicsParameters()
+    {
+        if (!magicaCloth.IsValid())
+            return;
+
+        var sdata = magicaCloth.SerializeData;
+
+        // Motion constraints - disable some constraints that can cause issues with grabbing
+        sdata.motionConstraint.useMaxDistance = false;
+        sdata.motionConstraint.useBackstop = false;
+
+        // Tether constraint - reduce compression
+        sdata.tetherConstraint.distanceCompression = 0.0f;
+
+        magicaCloth.SetParameterChange();
+
+        Debug.Log($"[ClothVertexGrabber] Applied basic physics parameters");
+        Debug.Log($"  To adjust damping and stiffness, use MagicaCloth component Inspector");
+    }
+
+    /// <summary>
+    /// Called when values are changed in Inspector
+    /// Allows real-time parameter adjustment in Play mode
+    /// </summary>
+    void OnValidate()
+    {
+        if (Application.isPlaying && magicaCloth != null && magicaCloth.IsValid() && customizePhysicsParameters)
+        {
+            ApplyPhysicsParameters();
+        }
+    }
+
+    #endregion
+
+    #region Vertex Connectivity
+
+    /// <summary>
+    /// Build vertex connectivity graph from mesh triangles
+    /// This allows us to find neighboring vertices
+    /// </summary>
+    void BuildVertexConnectivity()
+    {
+        if (!magicaCloth.IsValid())
+            return;
+
+        vertexConnectivity = new Dictionary<int, HashSet<int>>();
+
+        // Get mesh from the cloth object
+        Mesh mesh = null;
+
+        // Try to get mesh from SkinnedMeshRenderer
+        var skinnedMeshRenderer = magicaCloth.GetComponent<SkinnedMeshRenderer>();
+        if (skinnedMeshRenderer != null)
+        {
+            mesh = skinnedMeshRenderer.sharedMesh;
+        }
+        else
+        {
+            // Try to get mesh from MeshFilter
+            var meshFilter = magicaCloth.GetComponent<MeshFilter>();
+            if (meshFilter != null)
+            {
+                mesh = meshFilter.sharedMesh;
+            }
+        }
+
+        if (mesh != null)
+        {
+            int[] triangles = mesh.triangles;
+
+            // Build connectivity from triangles
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                int v0 = triangles[i];
+                int v1 = triangles[i + 1];
+                int v2 = triangles[i + 2];
+
+                // Add bidirectional connections
+                AddConnection(v0, v1);
+                AddConnection(v0, v2);
+                AddConnection(v1, v0);
+                AddConnection(v1, v2);
+                AddConnection(v2, v0);
+                AddConnection(v2, v1);
+            }
+
+            Debug.Log($"[ClothVertexGrabber] Built vertex connectivity: {vertexConnectivity.Count} vertices from {triangles.Length / 3} triangles");
+        }
+        else
+        {
+            Debug.LogWarning("[ClothVertexGrabber] Could not find mesh for building vertex connectivity");
+        }
+    }
+
+    /// <summary>
+    /// Add a connection between two vertices
+    /// </summary>
+    void AddConnection(int vertexA, int vertexB)
+    {
+        if (!vertexConnectivity.ContainsKey(vertexA))
+        {
+            vertexConnectivity[vertexA] = new HashSet<int>();
+        }
+        vertexConnectivity[vertexA].Add(vertexB);
+    }
+
+    /// <summary>
+    /// Get neighboring vertices up to specified depth
+    /// </summary>
+    /// <param name="vertexIndex">Starting vertex index</param>
+    /// <param name="depth">How many layers of neighbors (1=direct neighbors, 2=neighbors of neighbors, etc.)</param>
+    /// <returns>HashSet of neighbor vertex indices</returns>
+    HashSet<int> GetNeighborVertices(int vertexIndex, int depth)
+    {
+        if (vertexConnectivity == null || depth <= 0)
+            return new HashSet<int>();
+
+        HashSet<int> neighbors = new HashSet<int>();
+        HashSet<int> currentLayer = new HashSet<int> { vertexIndex };
+        HashSet<int> visited = new HashSet<int> { vertexIndex };
+
+        for (int d = 0; d < depth; d++)
+        {
+            HashSet<int> nextLayer = new HashSet<int>();
+
+            foreach (int vertex in currentLayer)
+            {
+                if (vertexConnectivity.ContainsKey(vertex))
+                {
+                    foreach (int neighbor in vertexConnectivity[vertex])
+                    {
+                        if (!visited.Contains(neighbor))
+                        {
+                            neighbors.Add(neighbor);
+                            nextLayer.Add(neighbor);
+                            visited.Add(neighbor);
+                        }
+                    }
+                }
+            }
+
+            currentLayer = nextLayer;
+        }
+
+        return neighbors;
+    }
+
+    #endregion
 
     #region Public API for External Control
 
