@@ -1,6 +1,6 @@
 # プロジェクトステータス
 
-最終更新: 2025-11-25 (v0.4.2)
+最終更新: 2025-11-25 (v0.4.3)
 
 ---
 
@@ -13,7 +13,7 @@
 | Unity バージョン | 6000.0.46f1 |
 | レンダーパイプライン | Universal Render Pipeline (URP) v17.0.4 |
 | プロジェクトタイプ | RPG with Advanced Cloth Physics |
-| 現在のバージョン | v0.4.2 |
+| 現在のバージョン | v0.4.3 |
 | 開発段階 | Cloth Physics Prototyping |
 
 ---
@@ -70,13 +70,21 @@
 - [x] `WorldToInitialClothLocal()` / `InitialClothLocalToWorld()` ヘルパーメソッド追加
 - [x] RandomGrabPointMoverスクリプト作成（テスト用）
 
-#### v0.4.2 (視覚的頂点選択ツール) - **最新**
+#### v0.4.2 (視覚的頂点選択ツール)
 - [x] ClothVertexGrabberEditor カスタムエディタ実装
 - [x] Scene viewでの頂点可視化（色分け表示）
 - [x] マウスクリックによる頂点選択機能
 - [x] GrabPoint別の色分け（赤/緑/青/黄/マゼンタ）
 - [x] Inspector UIでの選択モード切り替え
 - [x] Shift/Ctrl修飾キーによる追加/削除
+
+#### v0.4.3 (頂点割り当て永続化) - **最新**
+- [x] VertexAssignmentData ScriptableObject実装
+- [x] Playモード終了時の自動保存機能
+- [x] Playモード開始時の自動ロード機能
+- [x] Inspector UIでの手動保存/ロードボタン
+- [x] 保存ステータス表示（最終保存時刻、割り当て頂点数）
+- [x] `Assets/Editor/ClothVertexAssignments.asset`への永続化
 
 ### 🚧 現在の課題
 
@@ -126,7 +134,9 @@ RPG_defete/
 │   │       ├── TestScript1.cs
 │   │       └── TestScript2.cs
 │   ├── Editor/
-│   │   └── ClothVertexGrabberEditor.cs # 頂点選択ツール（CustomEditor）
+│   │   ├── ClothVertexGrabberEditor.cs # 頂点選択ツール（CustomEditor）
+│   │   ├── VertexAssignmentData.cs     # 頂点割り当てデータ（ScriptableObject）
+│   │   └── ClothVertexAssignments.asset # 頂点割り当て保存ファイル
 │   ├── Materials/                     # マテリアル（両面光沢布など）
 │   ├── Prefabs/                       # プレハブ
 │   └── Settings/                      # URP設定
@@ -282,3 +292,4 @@ dedc590 - Add double-sided glossy cloth shader and materials
 | 2025-11-25 | プロジェクトステータス初期作成（実態に合わせて更新） |
 | 2025-11-25 | v0.4.1リリース（cape2移動時の座標系問題修正、RandomGrabPointMover追加） |
 | 2025-11-25 | v0.4.2リリース（視覚的頂点選択ツール実装、ClothVertexGrabberEditor追加） |
+| 2025-11-25 | v0.4.3リリース（頂点割り当て永続化システム、ScriptableObject実装） |

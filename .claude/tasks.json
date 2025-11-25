@@ -2,7 +2,7 @@
   "project": {
     "name": "RPG_defete - Cloth Physics",
     "startDate": "2025-11-01",
-    "currentVersion": "v0.4.2",
+    "currentVersion": "v0.4.3",
     "currentPhase": "Cloth Physics Prototyping"
   },
   "phases": [
@@ -183,14 +183,21 @@
       "completedDate": "2025-11-25",
       "actualHours": 6,
       "notes": "ClothVertexGrabberEditor作成。Scene viewで頂点をクリック選択してGrabPointに割り当て可能に。色分け表示、マウスホバー検出、Inspector UI完備"
+    },
+    {
+      "id": "completed-012",
+      "title": "v0.4.3: 頂点割り当て永続化システム実装",
+      "completedDate": "2025-11-25",
+      "actualHours": 4,
+      "notes": "ScriptableObject（VertexAssignmentData）による永続化。Playモード終了時に自動保存、開始時に自動ロード。手動保存/ロードボタン、ステータス表示完備"
     }
   ],
   "metrics": {
     "totalEstimatedHours": 52,
-    "totalActualHours": 51.5,
-    "completedTasks": 11,
+    "totalActualHours": 55.5,
+    "completedTasks": 12,
     "pendingTasks": 5,
-    "overallProgress": 69
+    "overallProgress": 71
   },
   "knownIssues": [
     {

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using MagicaCloth2;
 using System.Collections.Generic;
+using System.IO;
 
 /// <summary>
 /// Custom Editor for ClothVertexGrabber
@@ -32,11 +33,26 @@ public class ClothVertexGrabberEditor : Editor
     private SerializedProperty grabPointsProp;
     private SerializedProperty magicaClothProp;
 
+    private VertexAssignmentData assignmentData;
+    private const string AssignmentDataPath = "Assets/Editor/ClothVertexAssignments.asset";
+
     void OnEnable()
     {
         grabber = (ClothVertexGrabber)target;
         grabPointsProp = serializedObject.FindProperty("grabPoints");
         magicaClothProp = serializedObject.FindProperty("magicaCloth");
+
+        // Load or create assignment data asset
+        LoadOrCreateAssignmentData();
+
+        // Subscribe to play mode state changes
+        EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+    }
+
+    void OnDisable()
+    {
+        // Unsubscribe from play mode state changes
+        EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
     }
 
     public override void OnInspectorGUI()
@@ -140,11 +156,81 @@ public class ClothVertexGrabberEditor : Editor
             EditorGUILayout.EndHorizontal();
         }
 
+        // Persistence UI
+        EditorGUILayout.Space(10);
+        DrawPersistenceUI();
+
         serializedObject.ApplyModifiedProperties();
 
         if (GUI.changed)
         {
             EditorUtility.SetDirty(target);
+        }
+    }
+
+    void DrawPersistenceUI()
+    {
+        EditorGUILayout.LabelField("Vertex Assignment Persistence", EditorStyles.boldLabel);
+
+        if (assignmentData != null)
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            EditorGUILayout.LabelField("Status:", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"Last Saved: {(string.IsNullOrEmpty(assignmentData.lastSavedTime) ? "Never" : assignmentData.lastSavedTime)}");
+            EditorGUILayout.LabelField($"Total Assigned Vertices: {assignmentData.totalAssignedVertices}");
+
+            EditorGUILayout.Space(5);
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Save Current Assignments", GUILayout.Height(25)))
+            {
+                SaveAssignments();
+            }
+
+            if (GUILayout.Button("Load Saved Assignments", GUILayout.Height(25)))
+            {
+                if (EditorUtility.DisplayDialog("Load Assignments",
+                    "This will overwrite current vertex assignments. Continue?",
+                    "Yes", "Cancel"))
+                {
+                    LoadAssignments();
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Clear All Assignments", GUILayout.Height(25)))
+            {
+                if (EditorUtility.DisplayDialog("Clear Assignments",
+                    "Are you sure you want to clear all vertex assignments?",
+                    "Yes", "Cancel"))
+                {
+                    ClearAllAssignments();
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(5);
+
+            EditorGUILayout.HelpBox(
+                "Auto-Save: Assignments are automatically saved when exiting Play mode.\n" +
+                "Auto-Load: Assignments are automatically loaded when entering Play mode.",
+                MessageType.Info);
+
+            EditorGUILayout.EndVertical();
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("Assignment data asset not found. Click 'Create Asset' to create one.", MessageType.Warning);
+            if (GUILayout.Button("Create Asset", GUILayout.Height(25)))
+            {
+                LoadOrCreateAssignmentData();
+            }
         }
     }
 
@@ -437,5 +523,92 @@ public class ClothVertexGrabberEditor : Editor
         serializedObject.ApplyModifiedProperties();
         EditorUtility.SetDirty(target);
         SceneView.RepaintAll();
+    }
+
+    // ========== Persistence Methods ==========
+
+    void LoadOrCreateAssignmentData()
+    {
+        // Try to load existing asset
+        assignmentData = AssetDatabase.LoadAssetAtPath<VertexAssignmentData>(AssignmentDataPath);
+
+        if (assignmentData == null)
+        {
+            // Create new asset
+            assignmentData = ScriptableObject.CreateInstance<VertexAssignmentData>();
+
+            // Ensure directory exists
+            string directory = Path.GetDirectoryName(AssignmentDataPath);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            AssetDatabase.CreateAsset(assignmentData, AssignmentDataPath);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log($"[ClothVertexGrabberEditor] Created new VertexAssignmentData at {AssignmentDataPath}");
+        }
+        else
+        {
+            Debug.Log($"[ClothVertexGrabberEditor] Loaded VertexAssignmentData from {AssignmentDataPath}");
+        }
+    }
+
+    void SaveAssignments()
+    {
+        if (assignmentData == null)
+        {
+            Debug.LogError("[ClothVertexGrabberEditor] Assignment data is null!");
+            return;
+        }
+
+        assignmentData.SaveFromGrabber(grabber);
+        AssetDatabase.SaveAssets();
+
+        Debug.Log($"[ClothVertexGrabberEditor] Saved vertex assignments. Total assigned vertices: {assignmentData.totalAssignedVertices}");
+        EditorUtility.DisplayDialog("Save Complete",
+            $"Vertex assignments saved successfully!\n\nTotal assigned vertices: {assignmentData.totalAssignedVertices}\nTime: {assignmentData.lastSavedTime}",
+            "OK");
+
+        Repaint();
+    }
+
+    void LoadAssignments()
+    {
+        if (assignmentData == null)
+        {
+            Debug.LogError("[ClothVertexGrabberEditor] Assignment data is null!");
+            return;
+        }
+
+        assignmentData.LoadToGrabber(grabber);
+        serializedObject.Update();
+
+        Debug.Log($"[ClothVertexGrabberEditor] Loaded vertex assignments. Total assigned vertices: {assignmentData.totalAssignedVertices}");
+        EditorUtility.DisplayDialog("Load Complete",
+            $"Vertex assignments loaded successfully!\n\nTotal assigned vertices: {assignmentData.totalAssignedVertices}\nLast saved: {assignmentData.lastSavedTime}",
+            "OK");
+
+        Repaint();
+        SceneView.RepaintAll();
+    }
+
+    void OnPlayModeStateChanged(PlayModeStateChange state)
+    {
+        switch (state)
+        {
+            case PlayModeStateChange.ExitingPlayMode:
+                // Auto-save when exiting play mode
+                Debug.Log("[ClothVertexGrabberEditor] Exiting Play mode - Auto-saving vertex assignments...");
+                SaveAssignments();
+                break;
+
+            case PlayModeStateChange.EnteredPlayMode:
+                // Auto-load when entering play mode
+                Debug.Log("[ClothVertexGrabberEditor] Entered Play mode - Auto-loading vertex assignments...");
+                LoadAssignments();
+                break;
+        }
     }
 }

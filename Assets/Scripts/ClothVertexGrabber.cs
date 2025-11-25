@@ -483,4 +483,12 @@ public class ClothVertexGrabber : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Get grab points array (for editor access)
+    /// </summary>
+    public GrabPointInfo[] GetGrabPoints()
+    {
+        return grabPoints;
+    }
 }

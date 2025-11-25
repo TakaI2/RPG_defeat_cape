@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47961890d85868a49930be9e9d525e71, type: 3}
+  m_Name: ClothVertexAssignments
+  m_EditorClassIdentifier: 
+  grabPointAssignments:
+  - grabPointName: GrabPoint1
+    assignedVertexIndices: 22010000250100002901000026010000
+  - grabPointName: GrabPoint2
+    assignedVertexIndices: 23000000220000001f00000024000000
+  lastSavedTime: 2025-11-25 20:36:35
+  totalAssignedVertices: 8
