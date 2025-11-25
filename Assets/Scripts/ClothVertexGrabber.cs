@@ -491,4 +491,208 @@ public class ClothVertexGrabber : MonoBehaviour
     {
         return grabPoints;
     }
+
+    #region Public API for External Control
+
+    /// <summary>
+    /// Start grabbing at the specified grab point index
+    /// Can be called from animations, timeline, or other scripts
+    /// </summary>
+    /// <param name="grabPointIndex">Index of the grab point (0-based)</param>
+    public void StartGrabbingAtPoint(int grabPointIndex)
+    {
+        if (grabPointIndex < 0 || grabPointIndex >= grabPoints.Length)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] Invalid grab point index: {grabPointIndex}");
+            return;
+        }
+
+        var grabPoint = grabPoints[grabPointIndex];
+        if (grabPoint == null)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] Grab point at index {grabPointIndex} is null");
+            return;
+        }
+
+        if (grabPoint.IsGrabbing)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] {grabPoint.name} is already grabbing");
+            return;
+        }
+
+        StartGrabbing(grabPoint);
+    }
+
+    /// <summary>
+    /// Stop grabbing at the specified grab point index
+    /// Can be called from animations, timeline, or other scripts
+    /// </summary>
+    /// <param name="grabPointIndex">Index of the grab point (0-based)</param>
+    public void StopGrabbingAtPoint(int grabPointIndex)
+    {
+        if (grabPointIndex < 0 || grabPointIndex >= grabPoints.Length)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] Invalid grab point index: {grabPointIndex}");
+            return;
+        }
+
+        var grabPoint = grabPoints[grabPointIndex];
+        if (grabPoint == null)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] Grab point at index {grabPointIndex} is null");
+            return;
+        }
+
+        if (!grabPoint.IsGrabbing)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] {grabPoint.name} is not currently grabbing");
+            return;
+        }
+
+        StopGrabbing(grabPoint);
+    }
+
+    /// <summary>
+    /// Start grabbing at the grab point with the specified name
+    /// Can be called from animations, timeline, or other scripts
+    /// </summary>
+    /// <param name="grabPointName">Name of the grab point</param>
+    public void StartGrabbingAtPoint(string grabPointName)
+    {
+        var grabPoint = FindGrabPointByName(grabPointName);
+        if (grabPoint == null)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] Grab point '{grabPointName}' not found");
+            return;
+        }
+
+        if (grabPoint.IsGrabbing)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] {grabPoint.name} is already grabbing");
+            return;
+        }
+
+        StartGrabbing(grabPoint);
+    }
+
+    /// <summary>
+    /// Stop grabbing at the grab point with the specified name
+    /// Can be called from animations, timeline, or other scripts
+    /// </summary>
+    /// <param name="grabPointName">Name of the grab point</param>
+    public void StopGrabbingAtPoint(string grabPointName)
+    {
+        var grabPoint = FindGrabPointByName(grabPointName);
+        if (grabPoint == null)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] Grab point '{grabPointName}' not found");
+            return;
+        }
+
+        if (!grabPoint.IsGrabbing)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] {grabPoint.name} is not currently grabbing");
+            return;
+        }
+
+        StopGrabbing(grabPoint);
+    }
+
+    /// <summary>
+    /// Toggle grabbing at the specified grab point index
+    /// Useful for Animation Events
+    /// </summary>
+    /// <param name="grabPointIndex">Index of the grab point (0-based)</param>
+    public void ToggleGrabbingAtPoint(int grabPointIndex)
+    {
+        if (grabPointIndex < 0 || grabPointIndex >= grabPoints.Length)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] Invalid grab point index: {grabPointIndex}");
+            return;
+        }
+
+        var grabPoint = grabPoints[grabPointIndex];
+        if (grabPoint == null)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] Grab point at index {grabPointIndex} is null");
+            return;
+        }
+
+        if (grabPoint.IsGrabbing)
+        {
+            StopGrabbing(grabPoint);
+        }
+        else
+        {
+            StartGrabbing(grabPoint);
+        }
+    }
+
+    /// <summary>
+    /// Toggle grabbing at the grab point with the specified name
+    /// Useful for Animation Events
+    /// </summary>
+    /// <param name="grabPointName">Name of the grab point</param>
+    public void ToggleGrabbingAtPoint(string grabPointName)
+    {
+        var grabPoint = FindGrabPointByName(grabPointName);
+        if (grabPoint == null)
+        {
+            Debug.LogWarning($"[ClothVertexGrabber] Grab point '{grabPointName}' not found");
+            return;
+        }
+
+        if (grabPoint.IsGrabbing)
+        {
+            StopGrabbing(grabPoint);
+        }
+        else
+        {
+            StartGrabbing(grabPoint);
+        }
+    }
+
+    /// <summary>
+    /// Check if a grab point is currently grabbing
+    /// </summary>
+    /// <param name="grabPointIndex">Index of the grab point (0-based)</param>
+    /// <returns>True if grabbing, false otherwise</returns>
+    public bool IsGrabbingAtPoint(int grabPointIndex)
+    {
+        if (grabPointIndex < 0 || grabPointIndex >= grabPoints.Length)
+        {
+            return false;
+        }
+
+        var grabPoint = grabPoints[grabPointIndex];
+        return grabPoint != null && grabPoint.IsGrabbing;
+    }
+
+    /// <summary>
+    /// Check if a grab point is currently grabbing
+    /// </summary>
+    /// <param name="grabPointName">Name of the grab point</param>
+    /// <returns>True if grabbing, false otherwise</returns>
+    public bool IsGrabbingAtPoint(string grabPointName)
+    {
+        var grabPoint = FindGrabPointByName(grabPointName);
+        return grabPoint != null && grabPoint.IsGrabbing;
+    }
+
+    /// <summary>
+    /// Find grab point by name
+    /// </summary>
+    private GrabPointInfo FindGrabPointByName(string name)
+    {
+        foreach (var grabPoint in grabPoints)
+        {
+            if (grabPoint != null && grabPoint.name == name)
+            {
+                return grabPoint;
+            }
+        }
+        return null;
+    }
+
+    #endregion
 }

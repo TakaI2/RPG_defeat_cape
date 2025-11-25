@@ -1,6 +1,6 @@
 # プロジェクトステータス
 
-最終更新: 2025-11-25 (v0.4.3)
+最終更新: 2025-11-25 (v0.4.4)
 
 ---
 
@@ -13,7 +13,7 @@
 | Unity バージョン | 6000.0.46f1 |
 | レンダーパイプライン | Universal Render Pipeline (URP) v17.0.4 |
 | プロジェクトタイプ | RPG with Advanced Cloth Physics |
-| 現在のバージョン | v0.4.3 |
+| 現在のバージョン | v0.4.4 |
 | 開発段階 | Cloth Physics Prototyping |
 
 ---
@@ -78,13 +78,22 @@
 - [x] Inspector UIでの選択モード切り替え
 - [x] Shift/Ctrl修飾キーによる追加/削除
 
-#### v0.4.3 (頂点割り当て永続化) - **最新**
+#### v0.4.3 (頂点割り当て永続化)
 - [x] VertexAssignmentData ScriptableObject実装
 - [x] Playモード終了時の自動保存機能
 - [x] Playモード開始時の自動ロード機能
 - [x] Inspector UIでの手動保存/ロードボタン
 - [x] 保存ステータス表示（最終保存時刻、割り当て頂点数）
 - [x] `Assets/Editor/ClothVertexAssignments.asset`への永続化
+
+#### v0.4.4 (外部制御API) - **最新**
+- [x] ClothVertexGrabberに外部制御用公開API追加
+- [x] インデックスと名前による制御メソッド実装
+- [x] アニメーションイベント対応
+- [x] ClothGrabControllerサンプルスクリプト作成
+- [x] APIガイドドキュメント作成（`.tmp/cloth_grab_api_guide.md`）
+- [x] アニメーション統合のためのToggle機能
+- [x] グラブ状態確認メソッド追加
 
 ### 🚧 現在の課題
 
@@ -120,7 +129,8 @@ RPG_defete/
 │   │   │   ├── ClothVertexGrabber.cs  # マルチポイント頂点グラビング
 │   │   │   ├── ClothGrabber.cs        # コライダーベースグラビング
 │   │   │   ├── GrabPointMover.cs      # グラブポイント制御
-│   │   │   └── RandomGrabPointMover.cs # グラブポイントランダム移動（テスト用）
+│   │   │   ├── RandomGrabPointMover.cs # グラブポイントランダム移動（テスト用）
+│   │   │   └── ClothGrabController.cs # アニメーション連携用コントローラ
 │   │   ├── RPG Core/
 │   │   │   ├── PlayerController.cs    # プレイヤー制御
 │   │   │   ├── PlayerAttack.cs        # プレイヤー攻撃
@@ -293,3 +303,4 @@ dedc590 - Add double-sided glossy cloth shader and materials
 | 2025-11-25 | v0.4.1リリース（cape2移動時の座標系問題修正、RandomGrabPointMover追加） |
 | 2025-11-25 | v0.4.2リリース（視覚的頂点選択ツール実装、ClothVertexGrabberEditor追加） |
 | 2025-11-25 | v0.4.3リリース（頂点割り当て永続化システム、ScriptableObject実装） |
+| 2025-11-25 | v0.4.4リリース（外部制御API追加、アニメーション連携対応、ClothGrabController実装） |

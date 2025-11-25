@@ -2,7 +2,7 @@
   "project": {
     "name": "RPG_defete - Cloth Physics",
     "startDate": "2025-11-01",
-    "currentVersion": "v0.4.3",
+    "currentVersion": "v0.4.4",
     "currentPhase": "Cloth Physics Prototyping"
   },
   "phases": [
@@ -190,14 +190,21 @@
       "completedDate": "2025-11-25",
       "actualHours": 4,
       "notes": "ScriptableObject（VertexAssignmentData）による永続化。Playモード終了時に自動保存、開始時に自動ロード。手動保存/ロードボタン、ステータス表示完備"
+    },
+    {
+      "id": "completed-013",
+      "title": "v0.4.4: 外部制御API実装とアニメーション統合",
+      "completedDate": "2025-11-25",
+      "actualHours": 3,
+      "notes": "ClothVertexGrabberに公開API追加（StartGrabbingAtPoint, StopGrabbingAtPoint, Toggle等）。ClothGrabControllerサンプルスクリプト作成。アニメーションイベント、Timeline、他スクリプトからの制御に対応。詳細ガイド作成"
     }
   ],
   "metrics": {
     "totalEstimatedHours": 52,
-    "totalActualHours": 55.5,
-    "completedTasks": 12,
+    "totalActualHours": 58.5,
+    "completedTasks": 13,
     "pendingTasks": 5,
-    "overallProgress": 71
+    "overallProgress": 72
   },
   "knownIssues": [
     {
