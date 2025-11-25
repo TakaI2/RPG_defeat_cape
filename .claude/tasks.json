@@ -2,7 +2,7 @@
   "project": {
     "name": "RPG_defete - Cloth Physics",
     "startDate": "2025-11-01",
-    "currentVersion": "v0.4.1",
+    "currentVersion": "v0.4.2",
     "currentPhase": "Cloth Physics Prototyping"
   },
   "phases": [
@@ -176,14 +176,21 @@
       "completedDate": "2025-11-25",
       "actualHours": 0.5,
       "notes": "グラブポイントをランダム移動させるテスト用スクリプト（Perlinノイズ対応）"
+    },
+    {
+      "id": "completed-011",
+      "title": "v0.4.2: 視覚的な頂点選択ツール実装",
+      "completedDate": "2025-11-25",
+      "actualHours": 6,
+      "notes": "ClothVertexGrabberEditor作成。Scene viewで頂点をクリック選択してGrabPointに割り当て可能に。色分け表示、マウスホバー検出、Inspector UI完備"
     }
   ],
   "metrics": {
     "totalEstimatedHours": 52,
-    "totalActualHours": 45.5,
-    "completedTasks": 10,
+    "totalActualHours": 51.5,
+    "completedTasks": 11,
     "pendingTasks": 5,
-    "overallProgress": 67
+    "overallProgress": 69
   },
   "knownIssues": [
     {
