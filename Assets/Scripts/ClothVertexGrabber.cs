@@ -70,6 +70,10 @@ public class ClothVertexGrabber : MonoBehaviour
     [Header("References")]
     [SerializeField] private MagicaCloth magicaCloth;
 
+    [Header("Vertex Assignment Data")]
+    [Tooltip("ScriptableObject containing saved vertex assignments. Drag the asset here for runtime builds.")]
+    [SerializeField] private VertexAssignmentData assignmentData;
+
     [Header("Grab Points")]
     [SerializeField] private GrabPointInfo[] grabPoints = new GrabPointInfo[3];
 
@@ -127,6 +131,17 @@ public class ClothVertexGrabber : MonoBehaviour
         Debug.Log($"[ClothVertexGrabber] Initialized - MagicaCloth: {magicaCloth.name}");
         Debug.Log($"[ClothVertexGrabber] {grabPoints.Length} grab points configured");
         Debug.Log($"[ClothVertexGrabber] ClothTransform: {magicaCloth.ClothTransform.name}");
+
+        // Load vertex assignments from ScriptableObject (for runtime builds)
+        if (assignmentData != null)
+        {
+            assignmentData.LoadToGrabber(this);
+            Debug.Log($"[ClothVertexGrabber] Loaded vertex assignments from ScriptableObject");
+        }
+        else
+        {
+            Debug.Log($"[ClothVertexGrabber] No assignmentData assigned - vertex assignments will need to be loaded manually");
+        }
 
         // Build vertex connectivity for neighbor grabbing
         BuildVertexConnectivity();

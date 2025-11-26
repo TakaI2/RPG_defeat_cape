@@ -11,7 +11,7 @@ using System.IO;
 [InitializeOnLoad]
 public static class ClothVertexGrabberAutoLoader
 {
-    private const string AssignmentDataPath = "Assets/Editor/ClothVertexAssignments.asset";
+    private const string AssignmentDataPath = "Assets/ClothVertexAssignments.asset";
 
     static ClothVertexGrabberAutoLoader()
     {
@@ -76,7 +76,7 @@ public class ClothVertexGrabberEditor : Editor
     private SerializedProperty magicaClothProp;
 
     private VertexAssignmentData assignmentData;
-    private const string AssignmentDataPath = "Assets/Editor/ClothVertexAssignments.asset";
+    private const string AssignmentDataPath = "Assets/ClothVertexAssignments.asset";
 
     void OnEnable()
     {

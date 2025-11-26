@@ -4,6 +4,7 @@ using System.Collections.Generic;
 /// <summary>
 /// ScriptableObject to persist vertex assignment data
 /// Stores which vertices are assigned to which grab points
+/// Works in both Editor and Runtime builds
 /// </summary>
 [System.Serializable]
 public class GrabPointAssignment
@@ -23,7 +24,32 @@ public class VertexAssignmentData : ScriptableObject
     public int totalAssignedVertices;
 
     /// <summary>
-    /// Save current vertex assignments from ClothVertexGrabber
+    /// Load vertex assignments into ClothVertexGrabber (Runtime safe)
+    /// </summary>
+    public void LoadToGrabber(ClothVertexGrabber grabber)
+    {
+        var grabPoints = grabber.GetGrabPoints();
+        if (grabPoints == null) return;
+
+        for (int i = 0; i < grabPointAssignments.Count && i < grabPoints.Length; i++)
+        {
+            if (grabPoints[i] == null) continue;
+
+            var assignment = grabPointAssignments[i];
+
+            // Clear existing assignments
+            grabPoints[i].allowedVertexIndices.Clear();
+
+            // Load saved assignments
+            grabPoints[i].allowedVertexIndices.AddRange(assignment.assignedVertexIndices);
+        }
+
+        Debug.Log($"[VertexAssignmentData] Loaded {totalAssignedVertices} vertex assignments to {grabber.name}");
+    }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// Save current vertex assignments from ClothVertexGrabber (Editor only)
     /// </summary>
     public void SaveFromGrabber(ClothVertexGrabber grabber)
     {
@@ -53,31 +79,7 @@ public class VertexAssignmentData : ScriptableObject
     }
 
     /// <summary>
-    /// Load vertex assignments into ClothVertexGrabber
-    /// </summary>
-    public void LoadToGrabber(ClothVertexGrabber grabber)
-    {
-        var grabPoints = grabber.GetGrabPoints();
-        if (grabPoints == null) return;
-
-        for (int i = 0; i < grabPointAssignments.Count && i < grabPoints.Length; i++)
-        {
-            if (grabPoints[i] == null) continue;
-
-            var assignment = grabPointAssignments[i];
-
-            // Clear existing assignments
-            grabPoints[i].allowedVertexIndices.Clear();
-
-            // Load saved assignments
-            grabPoints[i].allowedVertexIndices.AddRange(assignment.assignedVertexIndices);
-        }
-
-        UnityEditor.EditorUtility.SetDirty(grabber);
-    }
-
-    /// <summary>
-    /// Clear all assignments
+    /// Clear all assignments (Editor only)
     /// </summary>
     public void Clear()
     {
@@ -86,6 +88,15 @@ public class VertexAssignmentData : ScriptableObject
         totalAssignedVertices = 0;
         UnityEditor.EditorUtility.SetDirty(this);
     }
+
+    /// <summary>
+    /// Mark grabber as dirty (Editor only)
+    /// </summary>
+    public void MarkGrabberDirty(ClothVertexGrabber grabber)
+    {
+        UnityEditor.EditorUtility.SetDirty(grabber);
+    }
+#endif
 
     private int CalculateTotalAssignedVertices()
     {
