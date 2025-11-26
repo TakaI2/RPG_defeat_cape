@@ -5,6 +5,48 @@ using System.Collections.Generic;
 using System.IO;
 
 /// <summary>
+/// Static class to handle auto-load on Play mode entry
+/// Uses InitializeOnLoad to ensure event is always registered
+/// </summary>
+[InitializeOnLoad]
+public static class ClothVertexGrabberAutoLoader
+{
+    private const string AssignmentDataPath = "Assets/Editor/ClothVertexAssignments.asset";
+
+    static ClothVertexGrabberAutoLoader()
+    {
+        EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+    }
+
+    static void OnPlayModeStateChanged(PlayModeStateChange state)
+    {
+        if (state == PlayModeStateChange.EnteredPlayMode)
+        {
+            // Find all ClothVertexGrabber instances and load assignments
+            var grabbers = Object.FindObjectsByType<ClothVertexGrabber>(FindObjectsSortMode.None);
+            if (grabbers.Length == 0)
+            {
+                Debug.Log("[ClothVertexGrabberAutoLoader] No ClothVertexGrabber found in scene.");
+                return;
+            }
+
+            var assignmentData = AssetDatabase.LoadAssetAtPath<VertexAssignmentData>(AssignmentDataPath);
+            if (assignmentData == null)
+            {
+                Debug.Log("[ClothVertexGrabberAutoLoader] No assignment data found.");
+                return;
+            }
+
+            foreach (var grabber in grabbers)
+            {
+                assignmentData.LoadToGrabber(grabber);
+                Debug.Log($"[ClothVertexGrabberAutoLoader] Loaded assignments to {grabber.name}. Total vertices: {assignmentData.totalAssignedVertices}");
+            }
+        }
+    }
+}
+
+/// <summary>
 /// Custom Editor for ClothVertexGrabber
 /// Allows visual vertex selection in Scene view by clicking
 /// </summary>
@@ -44,15 +86,6 @@ public class ClothVertexGrabberEditor : Editor
 
         // Load or create assignment data asset
         LoadOrCreateAssignmentData();
-
-        // Subscribe to play mode state changes
-        EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-    }
-
-    void OnDisable()
-    {
-        // Unsubscribe from play mode state changes
-        EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
     }
 
     public override void OnInspectorGUI()
@@ -218,7 +251,7 @@ public class ClothVertexGrabberEditor : Editor
             EditorGUILayout.Space(5);
 
             EditorGUILayout.HelpBox(
-                "Auto-Save: Assignments are automatically saved when exiting Play mode.\n" +
+                "Manual Save: Click 'Save Current Assignments' to persist your changes.\n" +
                 "Auto-Load: Assignments are automatically loaded when entering Play mode.",
                 MessageType.Info);
 
@@ -592,23 +625,5 @@ public class ClothVertexGrabberEditor : Editor
 
         Repaint();
         SceneView.RepaintAll();
-    }
-
-    void OnPlayModeStateChanged(PlayModeStateChange state)
-    {
-        switch (state)
-        {
-            case PlayModeStateChange.ExitingPlayMode:
-                // Auto-save when exiting play mode
-                Debug.Log("[ClothVertexGrabberEditor] Exiting Play mode - Auto-saving vertex assignments...");
-                SaveAssignments();
-                break;
-
-            case PlayModeStateChange.EnteredPlayMode:
-                // Auto-load when entering play mode
-                Debug.Log("[ClothVertexGrabberEditor] Entered Play mode - Auto-loading vertex assignments...");
-                LoadAssignments();
-                break;
-        }
     }
 }
