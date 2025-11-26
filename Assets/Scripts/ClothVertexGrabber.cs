@@ -69,7 +69,6 @@ public class ClothVertexGrabber : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private MagicaCloth magicaCloth;
-    [SerializeField] private Transform clothRootTransform; // Optional: Use cape2's transform instead of ClothTransform
 
     [Header("Grab Points")]
     [SerializeField] private GrabPointInfo[] grabPoints = new GrabPointInfo[3];
@@ -77,42 +76,8 @@ public class ClothVertexGrabber : MonoBehaviour
     [Header("Direct Mesh Control")]
     [SerializeField] private bool useDirectMeshControl = true;
 
-    [Header("Cloth Physics Parameters")]
-    [Tooltip("Adjust these to reduce vibration when grabbing")]
-    [SerializeField] private bool customizePhysicsParameters = false;
-
-    [Header("Damping (減衰)")]
-    [Tooltip("Position damping - higher values reduce vibration (0-1)")]
-    [Range(0f, 1f)]
-    [SerializeField] private float positionDamping = 0.5f;
-
-    [Tooltip("Rotation damping - higher values reduce rotation vibration (0-1)")]
-    [Range(0f, 1f)]
-    [SerializeField] private float rotationDamping = 0.3f;
-
-    [Header("Distance Constraint (距離制約)")]
-    [Tooltip("Stiffness of distance constraint - lower values are softer (0-1)")]
-    [Range(0f, 1f)]
-    [SerializeField] private float distanceStiffness = 0.3f;
-
-    [Header("Inertia Constraint (慣性制約)")]
-    [Tooltip("World inertia - how much the cloth follows world movement (0-1)")]
-    [Range(0f, 1f)]
-    [SerializeField] private float worldInertia = 0.3f;
-
-    [Tooltip("Depth inertia - affects depth direction movement (0-1)")]
-    [Range(0f, 1f)]
-    [SerializeField] private float depthInertia = 0.3f;
-
     private bool isInitialized = false;
     private int teamId = -1;
-    private Transform activeClothTransform; // The transform to use for coordinate conversion
-
-    // Store the initial transform state when simulation starts
-    private Vector3 initialClothPosition;
-    private Quaternion initialClothRotation;
-    private Vector3 initialClothScale;
-    private Matrix4x4 initialClothWorldToLocal;
 
     // Cache for vertex connectivity (built from mesh triangles)
     private Dictionary<int, HashSet<int>> vertexConnectivity = null;
@@ -159,50 +124,9 @@ public class ClothVertexGrabber : MonoBehaviour
             }
         }
 
-        // Determine which transform to use for coordinate conversion
-        // If clothRootTransform is assigned, use it (typically cape2 parent)
-        // Otherwise, use ClothTransform from MagicaCloth (typically the child "Magica Cloth" object)
-        if (clothRootTransform != null)
-        {
-            activeClothTransform = clothRootTransform;
-            Debug.Log($"[ClothVertexGrabber] Using custom clothRootTransform: {clothRootTransform.name}");
-        }
-        else
-        {
-            activeClothTransform = magicaCloth.ClothTransform;
-            Debug.Log($"[ClothVertexGrabber] Using MagicaCloth.ClothTransform: {activeClothTransform.name}");
-        }
-
-        // CRITICAL: Store the initial ClothTransform state
-        // MagicaCloth2 uses this initial state as the reference coordinate system
-        initialClothPosition = magicaCloth.ClothTransform.position;
-        initialClothRotation = magicaCloth.ClothTransform.rotation;
-        initialClothScale = magicaCloth.ClothTransform.lossyScale;
-        initialClothWorldToLocal = magicaCloth.ClothTransform.worldToLocalMatrix;
-
-        Debug.Log($"[ClothVertexGrabber] Initial ClothTransform State:");
-        Debug.Log($"  Position: {initialClothPosition}");
-        Debug.Log($"  Rotation: {initialClothRotation.eulerAngles}");
-        Debug.Log($"  Scale: {initialClothScale}");
-
-        // Adjust constraints for vertex grabbing
-        if (customizePhysicsParameters)
-        {
-            ApplyPhysicsParameters();
-        }
-        else
-        {
-            // Default settings (original implementation)
-            var sdata = magicaCloth.SerializeData;
-            sdata.motionConstraint.useMaxDistance = false;
-            sdata.motionConstraint.useBackstop = false;
-            sdata.tetherConstraint.distanceCompression = 0.0f;
-            magicaCloth.SetParameterChange();
-        }
-
         Debug.Log($"[ClothVertexGrabber] Initialized - MagicaCloth: {magicaCloth.name}");
         Debug.Log($"[ClothVertexGrabber] {grabPoints.Length} grab points configured");
-        Debug.Log($"[ClothVertexGrabber] Active Cloth Transform: {activeClothTransform.name} at {activeClothTransform.position}");
+        Debug.Log($"[ClothVertexGrabber] ClothTransform: {magicaCloth.ClothTransform.name}");
 
         // Build vertex connectivity for neighbor grabbing
         BuildVertexConnectivity();
@@ -278,8 +202,8 @@ public class ClothVertexGrabber : MonoBehaviour
         var proxyMesh = magicaCloth.Process.ProxyMeshContainer.shareVirtualMesh;
         var positions = proxyMesh.localPositions.GetNativeArray();
 
-        // Use the INITIAL ClothTransform coordinate system
-        Vector3 grabPointLocalPos = WorldToInitialClothLocal(grabPoint.transform.position);
+        // Use the CURRENT ClothTransform coordinate system
+        Vector3 grabPointLocalPos = WorldToClothLocal(grabPoint.transform.position);
 
         foreach (int vertexIndex in grabPoint.GrabbedVertexIndices)
         {
@@ -314,15 +238,14 @@ public class ClothVertexGrabber : MonoBehaviour
         ref var tdata = ref MagicaManager.Team.GetTeamDataRef(teamId);
         var basePosArray = MagicaManager.Simulation.basePosArray;
 
-        // Use the INITIAL ClothTransform coordinate system for vertex operations
+        // Use the CURRENT ClothTransform coordinate system for vertex operations
         Vector3 grabPointWorldPos = grabPoint.transform.position;
-        Vector3 grabPointLocalPos = WorldToInitialClothLocal(grabPointWorldPos);
+        Vector3 grabPointLocalPos = WorldToClothLocal(grabPointWorldPos);
 
         Debug.Log($"[StartGrabbing] {grabPoint.name}:");
         Debug.Log($"  GrabPoint World: {grabPointWorldPos}");
-        Debug.Log($"  GrabPoint Local (Initial ClothTransform): {grabPointLocalPos}");
-        Debug.Log($"  Current ClothTransform World: {magicaCloth.ClothTransform.position}");
-        Debug.Log($"  Initial ClothTransform World: {initialClothPosition}");
+        Debug.Log($"  GrabPoint Local (Current ClothTransform): {grabPointLocalPos}");
+        Debug.Log($"  ClothTransform World: {magicaCloth.ClothTransform.position}");
 
         // Find candidate vertices
         var candidates = new List<(int index, float distance)>();
@@ -340,7 +263,7 @@ public class ClothVertexGrabber : MonoBehaviour
                 // Debug: Log first 3 vertices
                 if (candidates.Count <= 3)
                 {
-                    Vector3 vertexWorldPos = InitialClothLocalToWorld(vertexPos);
+                    Vector3 vertexWorldPos = ClothLocalToWorld(vertexPos);
                     Debug.Log($"    Vertex {i}: Local: {vertexPos}, World: {vertexWorldPos}, Distance: {distance:F3}");
                 }
             }
@@ -402,7 +325,7 @@ public class ClothVertexGrabber : MonoBehaviour
         {
             int particleIdx = tdata.particleChunk.startIndex + vertexIndex;
             Vector3 vertexLocalPos = basePosArray[particleIdx];
-            Vector3 vertexWorldPos = InitialClothLocalToWorld(vertexLocalPos);
+            Vector3 vertexWorldPos = ClothLocalToWorld(vertexLocalPos);
 
             grabbedIndices[idx] = vertexIndex;
             originalAttrs[idx] = attributes[vertexIndex];
@@ -464,15 +387,30 @@ public class ClothVertexGrabber : MonoBehaviour
 
             Vector3 grabPointWorldPos = grabPoint.transform.position;
 
-            // Use the INITIAL ClothTransform coordinate system
-            Vector3 grabPointLocalPos = WorldToInitialClothLocal(grabPointWorldPos);
+            // Use the CURRENT ClothTransform coordinate system
+            Vector3 grabPointLocalPos = WorldToClothLocal(grabPointWorldPos);
 
-            // Debug log (first grab point only, every 60 frames to avoid spam)
-            if (grabPoint == grabPoints[0] && Time.frameCount % 60 == 0)
+            // Debug log (first grab point only, every 30 frames to avoid spam)
+            if (grabPoint == grabPoints[0] && Time.frameCount % 30 == 0)
             {
-                Debug.Log($"[UpdateGrabbedVertices] GrabPoint World: {grabPointWorldPos}");
-                Debug.Log($"  -> Local (Initial ClothTransform): {grabPointLocalPos}");
-                Debug.Log($"  -> Current ClothTransform at: {magicaCloth.ClothTransform.position}, Initial was: {initialClothPosition}");
+                // Check actual vertex position in basePosArray for comparison
+                if (grabPoint.GrabbedVertexIndices != null && grabPoint.GrabbedVertexIndices.Length > 0)
+                {
+                    int firstVertexIdx = grabPoint.GrabbedVertexIndices[0];
+                    int particleIdx = tdata.particleChunk.startIndex + firstVertexIdx;
+                    Vector3 currentVertexLocal = basePosArray[particleIdx];
+                    Vector3 currentVertexWorld = ClothLocalToWorld(currentVertexLocal);
+
+                    Debug.Log($"[DEBUG] ========== Coordinate Debug ==========");
+                    Debug.Log($"  GrabPoint World: {grabPointWorldPos}");
+                    Debug.Log($"  GrabPoint -> ClothLocal: {grabPointLocalPos}");
+                    Debug.Log($"  Vertex[{firstVertexIdx}] Local (before update): {currentVertexLocal}");
+                    Debug.Log($"  Vertex[{firstVertexIdx}] World (before update): {currentVertexWorld}");
+                    Debug.Log($"  ClothTransform.position: {magicaCloth.ClothTransform.position}");
+                    Debug.Log($"  ClothTransform.rotation: {magicaCloth.ClothTransform.rotation.eulerAngles}");
+                    Debug.Log($"  Distance (World): {Vector3.Distance(grabPointWorldPos, currentVertexWorld):F4}");
+                    Debug.Log($"  Distance (Local): {Vector3.Distance(grabPointLocalPos, currentVertexLocal):F4}");
+                }
             }
 
             foreach (int vertexIndex in grabPoint.GrabbedVertexIndices)
@@ -503,8 +441,8 @@ public class ClothVertexGrabber : MonoBehaviour
             if (grabPoint == null || !grabPoint.IsGrabbing || grabPoint.transform == null)
                 continue;
 
-            // Use the INITIAL ClothTransform coordinate system
-            Vector3 grabPointLocalPos = WorldToInitialClothLocal(grabPoint.transform.position);
+            // Use the CURRENT ClothTransform coordinate system
+            Vector3 grabPointLocalPos = WorldToClothLocal(grabPoint.transform.position);
 
             foreach (int vertexIndex in grabPoint.GrabbedVertexIndices)
             {
@@ -517,21 +455,22 @@ public class ClothVertexGrabber : MonoBehaviour
     }
 
     /// <summary>
-    /// Convert world position to the initial ClothTransform's local space
-    /// This is the coordinate system used by MagicaCloth2's internal simulation
+    /// Convert world position to MagicaCloth2's internal coordinate system
+    /// Testing: MagicaCloth2 may use world coordinates directly
     /// </summary>
-    Vector3 WorldToInitialClothLocal(Vector3 worldPos)
+    Vector3 WorldToClothLocal(Vector3 worldPos)
     {
-        return initialClothWorldToLocal.MultiplyPoint3x4(worldPos);
+        // MagicaCloth2 seems to use world coordinates in its internal arrays
+        return worldPos;
     }
 
     /// <summary>
-    /// Convert from initial ClothTransform's local space to world position
+    /// Convert from MagicaCloth2's internal coordinate system to world position
     /// </summary>
-    Vector3 InitialClothLocalToWorld(Vector3 localPos)
+    Vector3 ClothLocalToWorld(Vector3 localPos)
     {
-        Matrix4x4 localToWorld = Matrix4x4.TRS(initialClothPosition, initialClothRotation, initialClothScale);
-        return localToWorld.MultiplyPoint3x4(localPos);
+        // MagicaCloth2 seems to use world coordinates in its internal arrays
+        return localPos;
     }
 
     void OnDrawGizmos()
@@ -563,8 +502,8 @@ public class ClothVertexGrabber : MonoBehaviour
                     {
                         int particleIndex = tdata.particleChunk.startIndex + vertexIndex;
                         Vector3 localPos = dispPosArray[particleIndex];
-                        // Convert from initial cloth local space to world space
-                        Vector3 worldPos = InitialClothLocalToWorld(localPos);
+                        // Convert from cloth local space to world space
+                        Vector3 worldPos = ClothLocalToWorld(localPos);
 
                         Gizmos.DrawSphere(worldPos, 0.03f);
                         Gizmos.DrawLine(worldPos, grabPoint.transform.position);
@@ -581,48 +520,6 @@ public class ClothVertexGrabber : MonoBehaviour
     {
         return grabPoints;
     }
-
-    #region Physics Parameters
-
-    /// <summary>
-    /// Apply custom physics parameters to MagicaCloth2
-    /// This can help reduce vibration when grabbing vertices
-    /// NOTE: MagicaCloth2's parameter system is complex.
-    /// For now, adjust parameters directly in MagicaCloth component's Inspector.
-    /// </summary>
-    void ApplyPhysicsParameters()
-    {
-        if (!magicaCloth.IsValid())
-            return;
-
-        var sdata = magicaCloth.SerializeData;
-
-        // Motion constraints - disable some constraints that can cause issues with grabbing
-        sdata.motionConstraint.useMaxDistance = false;
-        sdata.motionConstraint.useBackstop = false;
-
-        // Tether constraint - reduce compression
-        sdata.tetherConstraint.distanceCompression = 0.0f;
-
-        magicaCloth.SetParameterChange();
-
-        Debug.Log($"[ClothVertexGrabber] Applied basic physics parameters");
-        Debug.Log($"  To adjust damping and stiffness, use MagicaCloth component Inspector");
-    }
-
-    /// <summary>
-    /// Called when values are changed in Inspector
-    /// Allows real-time parameter adjustment in Play mode
-    /// </summary>
-    void OnValidate()
-    {
-        if (Application.isPlaying && magicaCloth != null && magicaCloth.IsValid() && customizePhysicsParameters)
-        {
-            ApplyPhysicsParameters();
-        }
-    }
-
-    #endregion
 
     #region Vertex Connectivity
 
