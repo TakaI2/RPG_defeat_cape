@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grabPointAssignments:
   - grabPointName: GrabPointR_H
-    assignedVertexIndices: 2a0100002d0100002601000029010000
+    assignedVertexIndices: 5b010000550100005a01000058010000
   - grabPointName: GrabPointL_H
-    assignedVertexIndices: 1f000000220000002300000024000000
+    assignedVertexIndices: 890100008e0100008c01000090010000
   - grabPointName: GrabPointL_A
-    assignedVertexIndices: 8f0100008a010000890100008e010000
+    assignedVertexIndices: 970100009601000099010000
   - grabPointName: GrabPointR_A
-    assignedVertexIndices: 5b0100005a0100005501000058010000
+    assignedVertexIndices: 670100006501000068010000
   - grabPointName: GrabPointR_C_1
-    assignedVertexIndices: da000000a9000000
+    assignedVertexIndices: a9000000da000000
   - grabPointName: GrabPointL_C_1
     assignedVertexIndices: 3600000035000000
-  lastSavedTime: 2025-11-27 06:17:20
-  totalAssignedVertices: 20
+  lastSavedTime: 2025-11-29 22:18:55
+  totalAssignedVertices: 18

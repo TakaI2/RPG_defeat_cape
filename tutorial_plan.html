@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity初心者向けチュートリアル：Vampire Survivors風ゲームを作ろう</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            border-left: 5px solid #3498db;
+            padding-left: 10px;
+        }
+        h3 {
+            color: #16a085;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, "Andale Mono", monospace;
+        }
+        pre {
+            background-color: #2d3436;
+            color: #dfe6e9;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        ul, ol {
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        .step {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .note {
+            background-color: #e8f6f3;
+            border-left: 5px solid #1abc9c;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Unity初心者向けチュートリアル：Vampire Survivors風ゲームを作ろう</h1>
+
+    <p>このチュートリアルでは、Unityを使ってシンプルな2D/3Dアクションゲームのプロトタイプを作成します。プレイヤーがマウスに向かって移動し、自動で弾を発射して迫りくる敵を倒すゲームです。</p>
+
+    <div class="step">
+        <h2>前提条件</h2>
+        <ul>
+            <li>Unity HubとUnityエディタ（2021.3以降推奨）がインストールされていること</li>
+            <li>基本的なC#の知識があるとなお良い（なくてもコードをコピー＆ペーストで進められます）</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h2>ステップ 1: プロジェクトのセットアップ</h2>
+        <ol>
+            <li><strong>Unity Hubを開く</strong>: 「新しいプロジェクト」をクリック。</li>
+            <li><strong>テンプレート選択</strong>: 「3D (Core)」を選択（今回は3Dオブジェクトを使いますが、カメラを上から見下ろす形にします）。</li>
+            <li><strong>プロジェクト名</strong>: <code>RPG_defete</code> など好きな名前を入力して作成。</li>
+            <li><strong>フォルダ作成</strong>: <code>Assets</code> フォルダ内に <code>Scripts</code>, <code>Prefabs</code>, <code>Materials</code> フォルダを作成して整理しやすくします。</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>ステップ 2: プレイヤーを作ろう（移動と回転）</h2>
+        <p>プレイヤーキャラクターを作成し、マウスカーソルの方向に移動・回転させます。</p>
+        <ol>
+            <li><strong>プレイヤー作成</strong>: Hierarchyで右クリック > 3D Object > Capsule。「Player」にリネーム。</li>
+            <li><strong>地面作成</strong>: Hierarchyで右クリック > 3D Object > Plane。「Ground」にリネーム。Scaleを (5, 1, 5) に設定。</li>
+            <li><strong>スクリプト作成</strong>: <code>Scripts</code> フォルダに <code>PlayerController.cs</code> を作成。</li>
+            <li><strong>コード記述</strong>:
+                <ul>
+                    <li><code>Rigidbody</code> コンポーネントを取得。</li>
+                    <li><code>Camera.main.ScreenPointToRay</code> でマウス位置へのレイを飛ばす。</li>
+                    <li><code>Physics.Raycast</code> で地面との交点を取得し、その方向へ <code>transform.LookAt</code> と <code>Rigidbody.MovePosition</code> で移動。</li>
+                </ul>
+            </li>
+            <li><strong>設定</strong>: Playerに <code>Rigidbody</code> を追加（Use Gravity: On, Constraints: Freeze Rotation X/Z, Freeze Position Y）。<code>PlayerController</code> をアタッチ。</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>ステップ 3: 攻撃システム（弾の発射）</h2>
+        <p>自動で弾を発射する仕組みを作ります。</p>
+        <ol>
+            <li><strong>弾の作成</strong>: Sphereを作成し、小さくする（Scale 0.3）。「Projectile」にリネームし、Prefab化（HierarchyからProjectウィンドウへドラッグ）。シーンからは削除。</li>
+            <li><strong>スクリプト作成</strong>: <code>Projectile.cs</code> と <code>PlayerAttack.cs</code> を作成。</li>
+            <li><strong>Projectile.cs</strong>:
+                <ul>
+                    <li><code>Update</code> で <code>transform.Translate(Vector3.forward * speed)</code> で前進。</li>
+                    <li><code>OnTriggerEnter</code> で敵（タグ "Enemy"）に当たったら敵を倒して自分も消える処理。</li>
+                </ul>
+            </li>
+            <li><strong>PlayerAttack.cs</strong>:
+                <ul>
+                    <li>一定時間ごとに <code>Instantiate</code> で弾を生成。</li>
+                </ul>
+            </li>
+            <li><strong>設定</strong>: Playerに <code>PlayerAttack</code> をアタッチ。Projectile Prefabを割り当て。Projectile Prefabに <code>Projectile</code> スクリプトをアタッチし、Is Triggerをオンにする。</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>ステップ 4: 敵キャラとAI（追跡）</h2>
+        <p>プレイヤーを追いかける敵を作ります。</p>
+        <ol>
+            <li><strong>敵作成</strong>: Cubeを作成。「Enemy」にリネーム。赤色などのマテリアルを適用して区別。タグ「Enemy」を追加して設定。</li>
+            <li><strong>スクリプト作成</strong>: <code>EnemyController.cs</code> を作成。</li>
+            <li><strong>コード記述</strong>:
+                <ul>
+                    <li>ターゲット（プレイヤー）の方向を計算。</li>
+                    <li><code>transform.position</code> を更新して移動。</li>
+                    <li><code>transform.LookAt</code> でプレイヤーを向く。</li>
+                </ul>
+            </li>
+            <li><strong>Prefab化</strong>: EnemyをPrefab化してシーンから削除。</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>ステップ 5: スポーンシステム（オブジェクトプール）</h2>
+        <p>敵を効率よく無限に湧かせるために「オブジェクトプール」を使います。</p>
+        <ol>
+            <li><strong>スクリプト作成</strong>: <code>ObjectPool.cs</code>（汎用プール）と <code>EnemySpawner.cs</code> を作成。</li>
+            <li><strong>ObjectPool.cs</strong>: <code>Queue</code> を使ってオブジェクトを再利用する仕組みを実装。</li>
+            <li><strong>EnemySpawner.cs</strong>:
+                <ul>
+                    <li><code>ObjectPool</code> を初期化。</li>
+                    <li>一定時間ごとにプレイヤーの周囲（ランダムな位置）に敵を出現させる。</li>
+                </ul>
+            </li>
+            <li><strong>設定</strong>: 空のGameObject「GameManager」を作成し、<code>EnemySpawner</code> をアタッチ。Enemy PrefabとPlayerを割り当て。</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>ステップ 6: ゲーム管理（ゲームオーバー）</h2>
+        <p>ゲームの状態（プレイ中、ゲームオーバー）を管理します。</p>
+        <ol>
+            <li><strong>スクリプト作成</strong>: <code>GameManager.cs</code> を作成（シングルトンパターン）。</li>
+            <li><strong>コード記述</strong>:
+                <ul>
+                    <li><code>GameState</code> (Playing, GameOver) を定義。</li>
+                    <li>プレイヤーが敵に当たったら <code>EndGame()</code> を呼び出し、状態をGameOverにする。</li>
+                    <li>生存時間 (<code>SurvivalTime</code>) を計測。</li>
+                </ul>
+            </li>
+            <li><strong>PlayerController修正</strong>: <code>OnCollisionEnter</code> で敵に当たったら <code>GameManager.Instance.EndGame()</code> を呼ぶように追加。</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>ステップ 7: UI（ゲームオーバー画面）</h2>
+        <p>ゲームオーバー時に生存時間を表示します。</p>
+        <ol>
+            <li><strong>UI作成</strong>: Canvasを作成。Text (TMP) を配置して「Game Over」と生存時間を表示するようにレイアウト。最初は非表示にしておく。</li>
+            <li><strong>スクリプト作成</strong>: <code>UIManager.cs</code> を作成。</li>
+            <li><strong>コード記述</strong>: <code>ShowGameOver(float time)</code> メソッドでUIを表示し、テキストを更新。</li>
+            <li><strong>連携</strong>: <code>GameManager</code> から <code>UIManager</code> を呼び出す。</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>完成！</h2>
+        <p>これで、迫りくる敵を倒しながら生き残る基本的なゲームループが完成しました。ここから、HP制にしたり、レベルアップ機能を追加したりして、自分だけのゲームに進化させていきましょう！</p>
+    </div>
+
+</body>
+</html>
