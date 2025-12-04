@@ -109,6 +109,21 @@
       "startDate": "2025-12-20",
       "dueDate": "2025-12-31",
       "description": "Netcodeを使用した布物理の同期"
+    },
+    {
+      "id": "task-006",
+      "title": "ストーリー・メッセージウィンドウシステム",
+      "phase": "phase4",
+      "priority": "high",
+      "estimatedHours": 18,
+      "actualHours": 0,
+      "status": "in_progress",
+      "assignee": "Dev Team",
+      "dependencies": [],
+      "startDate": "2025-12-04",
+      "dueDate": "2025-12-15",
+      "description": "キャラクター立ち絵・セリフ表示システム、ストーリーエディタ。仕様書完成済み(.tmp/)",
+      "specFiles": [".tmp/requirements.md", ".tmp/design.md", ".tmp/test_design.md", ".tmp/tasks.md"]
     }
   ],
   "completedTasks": [
@@ -242,11 +257,11 @@
     }
   ],
   "metrics": {
-    "totalEstimatedHours": 52,
+    "totalEstimatedHours": 70,
     "totalActualHours": 76.5,
     "completedTasks": 19,
-    "pendingTasks": 5,
-    "overallProgress": 79
+    "pendingTasks": 6,
+    "overallProgress": 76
   },
   "knownIssues": [
     {
