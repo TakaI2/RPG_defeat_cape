@@ -1,5 +1,27 @@
 # タスクリスト: ストーリー・メッセージウィンドウシステム
 
+## 進捗状況
+
+| 項目 | 状態 |
+|------|------|
+| Phase 1-5 | ✅ 完了 |
+| Phase 6 統合テスト | ✅ 完了 |
+| 日本語フォント | ⚠️ 一部対応（文字追加必要） |
+| 最終更新 | 2024-12-05 |
+
+### 完了した作業
+- 全スクリプト実装（17ファイル）
+- MessageWindow UI配置
+- Time.timeScale=0でのセリフ進行バグ修正
+- Noto Sans JP フォント導入
+
+### 残課題
+- **日本語フォント**: 足りない文字をFont Asset Creatorで追加
+  - 方法: Window → TextMeshPro → Font Asset Creator
+  - Custom Character List に必要な文字を追加して再生成
+
+---
+
 ## 概要
 
 | 項目 | 値 |
