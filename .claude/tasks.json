@@ -2,7 +2,7 @@
   "project": {
     "name": "RPG_defete - Cloth Physics",
     "startDate": "2025-11-01",
-    "currentVersion": "v0.4.5",
+    "currentVersion": "v0.4.10",
     "currentPhase": "Cloth Physics Prototyping"
   },
   "phases": [
@@ -204,14 +204,49 @@
       "completedDate": "2025-11-25",
       "actualHours": 4,
       "notes": "周辺頂点も一緒にグラブする機能実装（includeNeighborVertices, neighborDepth）。メッシュトライアングルから頂点接続グラフ構築。隣接頂点の自動検出アルゴリズム実装。SimplePerformanceMonitorスクリプト作成。振動が大幅に改善"
+    },
+    {
+      "id": "completed-015",
+      "title": "v0.4.6: 頂点割り当て永続化を手動保存に変更",
+      "completedDate": "2025-11-26",
+      "actualHours": 2,
+      "notes": "Playモード終了時の自動保存を廃止し、手動保存のみに変更。意図しない上書きを防止"
+    },
+    {
+      "id": "completed-016",
+      "title": "v0.4.7: 頂点位置オフセット修正",
+      "completedDate": "2025-11-27",
+      "actualHours": 3,
+      "notes": "頂点位置のオフセット問題を修正。強制的な物理パラメータ設定を削除"
+    },
+    {
+      "id": "completed-017",
+      "title": "v0.4.8: OrbitOscillator追加",
+      "completedDate": "2025-11-28",
+      "actualHours": 4,
+      "notes": "球面経線振動（spherical meridian oscillation）のためのOrbitOscillatorスクリプトを追加"
+    },
+    {
+      "id": "completed-018",
+      "title": "v0.4.9: ランタイムビルドでの頂点割り当て修正",
+      "completedDate": "2025-11-30",
+      "actualHours": 3,
+      "notes": "ランタイムビルドで頂点割り当てが動作しない問題を修正"
+    },
+    {
+      "id": "completed-019",
+      "title": "v0.4.10: chara_testシーンとチュートリアルドキュメント追加",
+      "completedDate": "2025-12-03",
+      "actualHours": 2,
+      "notes": "キャラクターテスト用シーンとチュートリアルドキュメントを追加"
     }
   ],
   "metrics": {
     "totalEstimatedHours": 52,
-    "totalActualHours": 62.5,
-    "completedTasks": 14,
+    "totalActualHours": 76.5,
+    "completedTasks": 19,
     "pendingTasks": 5,
-    "overallProgress": 74
+    "overallProgress": 79
   },
   "knownIssues": [
     {
