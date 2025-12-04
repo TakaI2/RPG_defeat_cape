@@ -172,10 +172,13 @@ namespace RPGDefete.Story.UI
                         advanceIndicator.SetActive(true);
                     }
 
-                    // Wait for input to advance
+                    // Wait for input to advance (use manual loop for unscaled time support)
                     isWaitingForInput = true;
                     inputReceived = false;
-                    yield return new WaitUntil(() => inputReceived);
+                    while (!inputReceived)
+                    {
+                        yield return null;
+                    }
                     isWaitingForInput = false;
                 }
             }
