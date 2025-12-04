@@ -1,0 +1,28 @@
+{
+  "id": "test_01",
+  "script": [
+    {
+      "op": "say",
+      "name": "テスト",
+      "portrait": "",
+      "portraitPosition": "center",
+      "lines": [
+        "これはテストメッセージです。",
+        "タイプライター効果でテキストが表示されます。"
+      ]
+    },
+    {
+      "op": "say",
+      "name": "テスト2",
+      "portrait": "",
+      "portraitPosition": "left",
+      "lines": [
+        "左側に立ち絵が表示される例です。"
+      ]
+    },
+    {
+      "op": "end",
+      "returnTo": "game"
+    }
+  ]
+}
