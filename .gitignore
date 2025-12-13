@@ -80,3 +80,7 @@ crashlytics-build.properties
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Large asset folders (purchased/external assets)
+[Aa]ssets/KriptoFX/
+[Aa]ssets/Characters/
