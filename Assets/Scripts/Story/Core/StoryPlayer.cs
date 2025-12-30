@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RPGDefete.Story.Commands;
 using RPGDefete.Story.UI;
+using RPGDefete.Character;
 
 namespace RPGDefete.Story
 {
@@ -82,7 +83,16 @@ namespace RPGDefete.Story
                 { "bgm.stop", new BgmStopCommand() },
                 { "se.play", new SeCommand() },
                 { "wait", new WaitCommand() },
-                { "end", new EndCommand() }
+                { "end", new EndCommand() },
+                { "expression", new ExpressionCommand() },
+                { "pose", new PoseCommand() },
+                { "move", new MoveCommand() },
+                // IK commands
+                { "lookat", new LookAtCommand() },
+                { "handik", new HandIKCommand() },
+                { "footik", new FootIKCommand() },
+                { "hipik", new HipIKCommand() },
+                { "ikcontrol", new IKControlCommand() }
             };
         }
 
@@ -299,6 +309,164 @@ namespace RPGDefete.Story
             {
                 context.SeSource = source;
             }
+        }
+
+        /// <summary>
+        /// Register a VRM character for expression control
+        /// </summary>
+        /// <param name="name">Character name identifier</param>
+        /// <param name="controller">VRMExpressionController component</param>
+        public void RegisterCharacter(string name, VRMExpressionController controller)
+        {
+            if (context != null)
+            {
+                context.RegisterCharacter(name, controller);
+            }
+        }
+
+        /// <summary>
+        /// Unregister a VRM character
+        /// </summary>
+        /// <param name="name">Character name identifier</param>
+        public void UnregisterCharacter(string name)
+        {
+            if (context != null)
+            {
+                context.UnregisterCharacter(name);
+            }
+        }
+
+        /// <summary>
+        /// Register an animation controller for a character
+        /// </summary>
+        /// <param name="name">Character name identifier</param>
+        /// <param name="controller">VRMAnimationController component</param>
+        public void RegisterAnimationController(string name, VRMAnimationController controller)
+        {
+            if (context != null)
+            {
+                context.RegisterAnimationController(name, controller);
+            }
+        }
+
+        /// <summary>
+        /// Unregister an animation controller
+        /// </summary>
+        /// <param name="name">Character name identifier</param>
+        public void UnregisterAnimationController(string name)
+        {
+            if (context != null)
+            {
+                context.UnregisterAnimationController(name);
+            }
+        }
+
+        /// <summary>
+        /// Register a navigator for a character
+        /// </summary>
+        /// <param name="name">Character name identifier</param>
+        /// <param name="navigator">CharacterNavigator component</param>
+        public void RegisterNavigator(string name, CharacterNavigator navigator)
+        {
+            if (context != null)
+            {
+                context.RegisterNavigator(name, navigator);
+            }
+        }
+
+        /// <summary>
+        /// Unregister a navigator
+        /// </summary>
+        /// <param name="name">Character name identifier</param>
+        public void UnregisterNavigator(string name)
+        {
+            if (context != null)
+            {
+                context.UnregisterNavigator(name);
+            }
+        }
+
+        /// <summary>
+        /// Register a move point
+        /// </summary>
+        /// <param name="name">Point name identifier</param>
+        /// <param name="point">Transform of the move point</param>
+        public void RegisterMovePoint(string name, Transform point)
+        {
+            if (context != null)
+            {
+                context.RegisterMovePoint(name, point);
+            }
+        }
+
+        /// <summary>
+        /// Unregister a move point
+        /// </summary>
+        /// <param name="name">Point name identifier</param>
+        public void UnregisterMovePoint(string name)
+        {
+            if (context != null)
+            {
+                context.UnregisterMovePoint(name);
+            }
+        }
+
+        /// <summary>
+        /// Register an IK controller for a character
+        /// </summary>
+        /// <param name="name">Character name identifier</param>
+        /// <param name="controller">VRMIKController component</param>
+        public void RegisterIKController(string name, VRMIKController controller)
+        {
+            if (context != null)
+            {
+                context.RegisterIKController(name, controller);
+            }
+        }
+
+        /// <summary>
+        /// Unregister an IK controller
+        /// </summary>
+        /// <param name="name">Character name identifier</param>
+        public void UnregisterIKController(string name)
+        {
+            if (context != null)
+            {
+                context.UnregisterIKController(name);
+            }
+        }
+
+        /// <summary>
+        /// Register an IK target
+        /// </summary>
+        /// <param name="name">Target name identifier</param>
+        /// <param name="target">Transform of the IK target</param>
+        public void RegisterIKTarget(string name, Transform target)
+        {
+            if (context != null)
+            {
+                context.RegisterIKTarget(name, target);
+            }
+        }
+
+        /// <summary>
+        /// Unregister an IK target
+        /// </summary>
+        /// <param name="name">Target name identifier</param>
+        public void UnregisterIKTarget(string name)
+        {
+            if (context != null)
+            {
+                context.UnregisterIKTarget(name);
+            }
+        }
+
+        /// <summary>
+        /// Get the story context (for advanced usage)
+        /// </summary>
+        public StoryContext GetContext()
+        {
+            return context;
         }
 
         private void OnDestroy()

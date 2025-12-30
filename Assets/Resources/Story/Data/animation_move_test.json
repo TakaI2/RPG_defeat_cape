@@ -1,0 +1,75 @@
+{
+  "id": "animation_move_test",
+  "script": [
+    {
+      "op": "say",
+      "name": "System",
+      "lines": ["アニメーション・移動テストを開始します"]
+    },
+    {
+      "op": "pose",
+      "targetCharacter": "hero",
+      "animationTrigger": "Wave",
+      "waitForAnimation": true
+    },
+    {
+      "op": "say",
+      "name": "Hero",
+      "lines": ["手を振りました（Wave）"]
+    },
+    {
+      "op": "move",
+      "targetCharacter": "hero",
+      "moveTargetPoint": "stage_center",
+      "moveSpeed": 2.0,
+      "waitForArrival": true
+    },
+    {
+      "op": "say",
+      "name": "Hero",
+      "lines": ["ステージ中央に移動しました"]
+    },
+    {
+      "op": "expression",
+      "targetCharacter": "hero",
+      "expressionName": "happy",
+      "expressionWeight": 1.0,
+      "expressionDuration": 300,
+      "waitForCompletion": true
+    },
+    {
+      "op": "pose",
+      "targetCharacter": "hero",
+      "animationTrigger": "Jump",
+      "waitForAnimation": true
+    },
+    {
+      "op": "say",
+      "name": "Hero",
+      "lines": ["嬉しくてジャンプしました"]
+    },
+    {
+      "op": "move",
+      "targetCharacter": "hero",
+      "moveTargetPoint": "stage_right",
+      "moveSpeed": 3.5,
+      "waitForArrival": true
+    },
+    {
+      "op": "expression",
+      "targetCharacter": "hero",
+      "expressionName": "neutral",
+      "expressionWeight": 1.0,
+      "expressionDuration": 300,
+      "waitForCompletion": true
+    },
+    {
+      "op": "say",
+      "name": "System",
+      "lines": ["アニメーション・移動テスト完了"]
+    },
+    {
+      "op": "end"
+    }
+  ]
+}

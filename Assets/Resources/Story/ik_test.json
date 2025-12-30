@@ -1,0 +1,153 @@
+{
+  "storyId": "ik_test",
+  "title": "IK System Test",
+  "commands": [
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["IKシステムのテストを開始します"]
+    },
+    {
+      "op": "lookat",
+      "targetCharacter": "hero",
+      "lookAtTarget": "lookat_target",
+      "lookAtWeight": 1.0,
+      "lookAtDuration": 0.5
+    },
+    {
+      "op": "wait",
+      "waitDuration": 1000
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["LookAtが有効になりました", "キャラクターがターゲットを見ています"]
+    },
+    {
+      "op": "handik",
+      "targetCharacter": "hero",
+      "handIKTarget": "hand_target",
+      "handType": "right",
+      "handIKWeight": 1.0,
+      "handIKDuration": 0.3
+    },
+    {
+      "op": "wait",
+      "waitDuration": 1000
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["Hand IKが有効になりました", "右手がターゲットに伸びています"]
+    },
+    {
+      "op": "handik",
+      "targetCharacter": "hero",
+      "handIKTarget": "none",
+      "handType": "right",
+      "handIKDuration": 0.3
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["Hand IKを解除しました"]
+    },
+    {
+      "op": "footik",
+      "targetCharacter": "hero",
+      "footIKTarget": "foot_target",
+      "footType": "right",
+      "footIKWeight": 1.0,
+      "footIKDuration": 0.3
+    },
+    {
+      "op": "wait",
+      "waitDuration": 1000
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["Foot IKが有効になりました", "右足がターゲット位置に配置されています"]
+    },
+    {
+      "op": "footik",
+      "targetCharacter": "hero",
+      "footIKTarget": "none",
+      "footType": "right",
+      "footIKDuration": 0.3
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["Foot IKを解除しました"]
+    },
+    {
+      "op": "hipik",
+      "targetCharacter": "hero",
+      "hipIKTarget": "hip_target",
+      "hipIKWeight": 1.0,
+      "hipIKDuration": 0.5
+    },
+    {
+      "op": "wait",
+      "waitDuration": 1000
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["Hip IKが有効になりました", "腰がターゲット位置に移動しています"]
+    },
+    {
+      "op": "hipik",
+      "targetCharacter": "hero",
+      "hipIKTarget": "none",
+      "hipIKDuration": 0.5
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["Hip IKを解除しました"]
+    },
+    {
+      "op": "ikcontrol",
+      "targetCharacter": "hero",
+      "ikEnabled": false,
+      "ikTransitionDuration": 0.3
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["全IKを無効化しました", "（歩行モードなど）"]
+    },
+    {
+      "op": "wait",
+      "waitDuration": 1000
+    },
+    {
+      "op": "ikcontrol",
+      "targetCharacter": "hero",
+      "ikEnabled": true,
+      "ikTransitionDuration": 0.3
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["全IKを再有効化しました"]
+    },
+    {
+      "op": "lookat",
+      "targetCharacter": "hero",
+      "lookAtTarget": "none",
+      "lookAtDuration": 0.3
+    },
+    {
+      "op": "say",
+      "characterName": "System",
+      "lines": ["IKシステムのテストが完了しました"]
+    },
+    {
+      "op": "end",
+      "returnTo": "main"
+    }
+  ]
+}

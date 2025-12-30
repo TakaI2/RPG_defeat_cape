@@ -1,6 +1,6 @@
 # プロジェクトステータス
 
-最終更新: 2025-11-25 (v0.4.5)
+最終更新: 2025-12-31 (v0.5.0)
 
 ---
 
@@ -13,8 +13,37 @@
 | Unity バージョン | 6000.0.46f1 |
 | レンダーパイプライン | Universal Render Pipeline (URP) v17.0.4 |
 | プロジェクトタイプ | RPG with Advanced Cloth Physics |
-| 現在のバージョン | v0.4.5 |
-| 開発段階 | Cloth Physics Prototyping |
+| 現在のバージョン | v0.5.0 |
+| 開発段階 | VRoid Character Acting System |
+
+---
+
+## 📊 進捗サマリー
+
+| 指標 | 値 |
+|------|-----|
+| 全体進捗 | **85%** |
+| 完了タスク | 25個 |
+| 進行中 | 1個 |
+| 未着手 | 2個 |
+| 完了フェーズ | Phase 1-3 (Cloth), Phase 1-3 (Acting) |
+| 現在フェーズ | VRoid Acting System - Phase 3完了 |
+
+### 📅 開発スケジュール
+
+```mermaid
+gantt
+    title RPG_defete 開発スケジュール
+    dateFormat YYYY-MM-DD
+    section Phase 1
+    基本布物理システム      :done, phase1, 2025-11-01, 2025-11-10
+    section Phase 2
+    振動修正・最適化        :done, phase2, 2025-11-10, 2025-11-15
+    section Phase 3
+    マルチポイントシステム   :done, phase3, 2025-11-15, 2025-11-25
+    section Phase 4
+    RPG統合・VR対応        :active, phase4, 2025-11-25, 2025-12-31
+```
 
 ---
 
@@ -95,7 +124,7 @@
 - [x] アニメーション統合のためのToggle機能
 - [x] グラブ状態確認メソッド追加
 
-#### v0.4.5 (振動軽減・パフォーマンス) - **最新**
+#### v0.4.5 (振動軽減・パフォーマンス)
 - [x] 周辺頂点も一緒にグラブする機能実装（振動軽減）
 - [x] メッシュトライアングルから頂点接続情報を構築
 - [x] `includeNeighborVertices`オプション追加（デフォルト: true）
@@ -103,6 +132,51 @@
 - [x] 隣接頂点の自動検出アルゴリズム実装
 - [x] SimplePerformanceMonitorスクリプト作成（FPS監視）
 - [x] パフォーマンス分析ドキュメント作成
+
+#### v0.4.6 (永続化改善)
+- [x] Playモード終了時の自動保存を廃止
+- [x] 手動保存のみに変更（意図しない上書き防止）
+
+#### v0.4.7 (頂点オフセット修正)
+- [x] 頂点位置のオフセット問題を修正
+- [x] 強制的な物理パラメータ設定を削除
+
+#### v0.4.8 (OrbitOscillator)
+- [x] 球面経線振動（spherical meridian oscillation）のためのOrbitOscillatorスクリプト追加
+
+#### v0.4.9 (ランタイムビルド対応)
+- [x] ランタイムビルドで頂点割り当てが動作しない問題を修正
+
+#### v0.4.10 (chara_test)
+- [x] キャラクターテスト用シーン（chara_test）追加
+- [x] チュートリアルドキュメント追加
+
+#### v0.5.0 (VRoid Character Acting System) - **最新**
+
+**Phase 1: VRM Expression Controller**
+- [x] VRMExpressionController.cs 作成
+- [x] ExpressionCommand.cs 作成
+- [x] StoryContext/StoryCommandData 拡張
+- [x] ExpressionTester.cs 作成
+
+**Phase 2: Animation Controller + NavMesh Movement**
+- [x] VRMAnimationController.cs 作成
+- [x] CharacterNavigator.cs 作成
+- [x] PoseCommand.cs / MoveCommand.cs 作成
+- [x] AnimationMoveTester.cs 作成
+- [x] CombatAnimator対応（Speed パラメータ）
+
+**Phase 3: IK System (Animation Rigging)**
+- [x] Animation Rigging パッケージ追加 (v1.3.0)
+- [x] VRMRigSetup.cs 作成（Rig構造自動生成）
+- [x] VRMIKController.cs 作成（LookAt/Hand/Foot/Hip IK制御）
+- [x] LookAtCommand.cs / HandIKCommand.cs / FootIKCommand.cs / HipIKCommand.cs / IKControlCommand.cs 作成
+- [x] IKTester.cs 作成
+- [x] StoryPlayer.cs にIKコマンド登録
+
+### 🚧 進行中のタスク
+
+- [ ] **Phase 3 テスト** - IKシステムの動作確認
 
 ### 🚧 現在の課題
 
@@ -114,14 +188,15 @@
 
 - ~~cape2移動後に頂点がgrabpointからずれる問題~~ → v0.4.1で解決
 
-### ⏳ 今後の予定
+### ⏳ 今後の予定 (Phase 4タスク)
 
-- [ ] パフォーマンステスト（SimplePerformanceMonitorでFPS確認）
-- [ ] MagicaCloth2パラメータの最適値探索（Damping, Distance Stiffness等）
-- [ ] VRコントローラー対応
-- [ ] RPGキャラクターシステムとの統合
-- [ ] 布グラビングを活用したゲームプレイ要素
-- [ ] マルチプレイヤー対応の検討
+| 優先度 | タスク | 見積時間 | 期限 |
+|--------|--------|----------|------|
+| 🔴 High | VRコントローラー入力対応 | 8h | 2025-12-05 |
+| 🔴 High | パフォーマンス最適化（Job System, Burst） | 6h | 2025-12-10 |
+| 🟡 Medium | RPGキャラクターシステムとの統合 | 10h | 2025-12-20 |
+| 🟡 Medium | 布グラビングを活用したゲームプレイ要素 | 12h | 2025-12-25 |
+| 🟢 Low | マルチプレイヤー対応の検討（Netcode） | 16h | 2025-12-31 |
 
 ---
 
@@ -213,7 +288,7 @@ RPG_defete/
 
 ## 主要スクリプト概要
 
-### ClothVertexGrabber.cs (v0.4.5)
+### ClothVertexGrabber.cs (v0.4.10)
 
 **マルチポイント頂点グラビングシステム（振動軽減機能付き）**
 
@@ -321,3 +396,10 @@ dedc590 - Add double-sided glossy cloth shader and materials
 | 2025-11-25 | v0.4.3リリース（頂点割り当て永続化システム、ScriptableObject実装） |
 | 2025-11-25 | v0.4.4リリース（外部制御API追加、アニメーション連携対応、ClothGrabController実装） |
 | 2025-11-25 | v0.4.5リリース（周辺頂点グラブ機能で振動軽減、パフォーマンスモニター追加） |
+| 2025-11-26 | v0.4.6リリース（頂点割り当て永続化を手動保存のみに変更） |
+| 2025-11-27 | v0.4.7リリース（頂点位置オフセット修正） |
+| 2025-11-28 | v0.4.8リリース（OrbitOscillatorスクリプト追加） |
+| 2025-11-30 | v0.4.9リリース（ランタイムビルド頂点割り当て修正） |
+| 2025-12-03 | v0.4.10リリース（chara_testシーン、チュートリアル追加） |
+| 2025-12-29 | 進捗レポート更新、Mermaidガントチャート追加 |
+| 2025-12-31 | v0.5.0リリース（VRoid Character Acting System Phase 1-3完了） |

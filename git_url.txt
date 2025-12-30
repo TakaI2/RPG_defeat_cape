@@ -1,1 +1,5 @@
 https://github.com/TakaI2/RPG_defeat_cape.git
+
+
+ストーリーシステム参考
+https://github.com/TakaI2/RPG-Game.git

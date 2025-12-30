@@ -1,0 +1,78 @@
+{
+  "id": "expression_test",
+  "script": [
+    {
+      "op": "say",
+      "name": "System",
+      "lines": ["表情テストを開始します"]
+    },
+    {
+      "op": "expression",
+      "targetCharacter": "hero",
+      "expressionName": "happy",
+      "expressionWeight": 1.0,
+      "expressionDuration": 300,
+      "waitForCompletion": true
+    },
+    {
+      "op": "say",
+      "name": "Hero",
+      "lines": ["嬉しい表情（happy）"]
+    },
+    {
+      "op": "expression",
+      "targetCharacter": "hero",
+      "expressionName": "angry",
+      "expressionWeight": 1.0,
+      "expressionDuration": 300,
+      "waitForCompletion": true
+    },
+    {
+      "op": "say",
+      "name": "Hero",
+      "lines": ["怒りの表情（angry）"]
+    },
+    {
+      "op": "expression",
+      "targetCharacter": "hero",
+      "expressionName": "sad",
+      "expressionWeight": 1.0,
+      "expressionDuration": 300,
+      "waitForCompletion": true
+    },
+    {
+      "op": "say",
+      "name": "Hero",
+      "lines": ["悲しみの表情（sad）"]
+    },
+    {
+      "op": "expression",
+      "targetCharacter": "hero",
+      "expressionName": "surprised",
+      "expressionWeight": 1.0,
+      "expressionDuration": 300,
+      "waitForCompletion": true
+    },
+    {
+      "op": "say",
+      "name": "Hero",
+      "lines": ["驚きの表情（surprised）"]
+    },
+    {
+      "op": "expression",
+      "targetCharacter": "hero",
+      "expressionName": "neutral",
+      "expressionWeight": 1.0,
+      "expressionDuration": 300,
+      "waitForCompletion": true
+    },
+    {
+      "op": "say",
+      "name": "System",
+      "lines": ["表情テスト完了"]
+    },
+    {
+      "op": "end"
+    }
+  ]
+}

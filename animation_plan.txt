@@ -1,0 +1,4 @@
+Locomotionで動かす。
+
+コントローラに
+unityChanLocomotionsを設定
