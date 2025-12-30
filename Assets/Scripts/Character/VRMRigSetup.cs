@@ -91,12 +91,12 @@ namespace RPGDefete.Character
             var rigRoot = CreateChildObject(transform, "Rig");
 
             // 各Rigを作成
-            SetupLookAtRig(rigRoot);
-            SetupHandIKRig(rigRoot, true);  // Left
-            SetupHandIKRig(rigRoot, false); // Right
-            SetupFootIKRig(rigRoot, true);  // Left
-            SetupFootIKRig(rigRoot, false); // Right
-            SetupHipIKRig(rigRoot);
+            SetupLookAtRig(rigRoot.transform);
+            SetupHandIKRig(rigRoot.transform, true);  // Left
+            SetupHandIKRig(rigRoot.transform, false); // Right
+            SetupFootIKRig(rigRoot.transform, true);  // Left
+            SetupFootIKRig(rigRoot.transform, false); // Right
+            SetupHipIKRig(rigRoot.transform);
 
             // RigBuilderにRigを登録
             rigBuilder.layers.Clear();
@@ -272,7 +272,10 @@ namespace RPGDefete.Character
             sourceObjects.Add(new WeightedTransform(hipTarget, 1f));
             hipConstraint.data.sourceObjects = sourceObjects;
 
-            hipConstraint.data.constrainedPositionAxes = new Vector3Bool(true, true, true);
+            // constrainedAxes で位置制約の軸を設定
+            hipConstraint.data.constrainedXAxis = true;
+            hipConstraint.data.constrainedYAxis = true;
+            hipConstraint.data.constrainedZAxis = true;
         }
 
         private GameObject CreateChildObject(Transform parent, string name)

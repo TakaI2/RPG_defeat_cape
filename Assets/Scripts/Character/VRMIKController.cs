@@ -162,10 +162,14 @@ namespace RPGDefete.Character
 
             if (constraint == null) yield break;
 
-            ref Coroutine coroutine = ref (hand == HandType.Left ? ref _leftHandCoroutine : ref _rightHandCoroutine);
-            if (coroutine != null)
+            // イテレータ内では ref が使えないため、手動で分岐
+            if (hand == HandType.Left)
             {
-                StopCoroutine(coroutine);
+                if (_leftHandCoroutine != null) StopCoroutine(_leftHandCoroutine);
+            }
+            else
+            {
+                if (_rightHandCoroutine != null) StopCoroutine(_rightHandCoroutine);
             }
 
             float dur = duration < 0 ? defaultTransitionDuration : duration;
@@ -221,10 +225,14 @@ namespace RPGDefete.Character
 
             if (constraint == null) yield break;
 
-            ref Coroutine coroutine = ref (foot == FootType.Left ? ref _leftFootCoroutine : ref _rightFootCoroutine);
-            if (coroutine != null)
+            // イテレータ内では ref が使えないため、手動で分岐
+            if (foot == FootType.Left)
             {
-                StopCoroutine(coroutine);
+                if (_leftFootCoroutine != null) StopCoroutine(_leftFootCoroutine);
+            }
+            else
+            {
+                if (_rightFootCoroutine != null) StopCoroutine(_rightFootCoroutine);
             }
 
             float dur = duration < 0 ? defaultTransitionDuration : duration;
