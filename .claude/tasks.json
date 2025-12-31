@@ -2,7 +2,7 @@
   "project": {
     "name": "RPG_defete - Cloth Physics & VRoid Acting",
     "startDate": "2025-11-01",
-    "currentVersion": "v0.5.0",
+    "currentVersion": "v0.5.1",
     "currentPhase": "VRoid Character Acting System"
   },
   "phases": [
@@ -296,14 +296,21 @@
       "completedDate": "2025-12-31",
       "actualHours": 8,
       "notes": "Animation Rigging v1.3.0追加、VRMRigSetup.cs/VRMIKController.cs作成、LookAt/Hand/Foot/Hip IKコマンド作成、IKTester.cs作成"
+    },
+    {
+      "id": "completed-023",
+      "title": "v0.5.1: FinalIKへの移行",
+      "completedDate": "2026-01-01",
+      "actualHours": 3,
+      "notes": "Animation RiggingからFinalIKへ移行。VRMFinalIKController.cs作成（FullBodyBipedIK + LookAtIK使用）。IKTester.csをFinalIK対応に更新。全IK機能（LookAt/Hand/Foot/Body）動作確認完了"
     }
   ],
   "metrics": {
     "totalEstimatedHours": 72,
-    "totalActualHours": 94.5,
-    "completedTasks": 22,
+    "totalActualHours": 97.5,
+    "completedTasks": 23,
     "pendingTasks": 7,
-    "overallProgress": 76
+    "overallProgress": 77
   },
   "knownIssues": [
     {

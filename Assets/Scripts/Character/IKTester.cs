@@ -5,12 +5,16 @@ using RPGDefete.Story;
 namespace RPGDefete.Character
 {
     /// <summary>
-    /// VRMIKController のテスト用コンポーネント
+    /// VRMFinalIKController / VRMIKController のテスト用コンポーネント
     /// キーボード入力で各種IKテストを実行
+    /// FinalIKが優先されます
     /// </summary>
     public class IKTester : MonoBehaviour
     {
-        [Header("参照")]
+        [Header("参照 - FinalIK (優先)")]
+        [SerializeField] private VRMFinalIKController finalIKController;
+
+        [Header("参照 - Animation Rigging (フォールバック)")]
         [SerializeField] private VRMIKController ikController;
         [SerializeField] private VRMRigSetup rigSetup;
         [SerializeField] private StoryPlayer storyPlayer;
@@ -40,8 +44,35 @@ namespace RPGDefete.Character
         private bool footIKEnabled = false;
         private bool hipIKEnabled = false;
 
+        /// <summary>FinalIKを使用するか</summary>
+        private bool UseFinalIK => finalIKController != null && finalIKController.IsValid;
+
+        /// <summary>Animation Riggingを使用するか</summary>
+        private bool UseAnimationRigging => !UseFinalIK && ikController != null && ikController.IsValid;
+
+        /// <summary>いずれかのIKシステムが有効か</summary>
+        private bool IsAnyIKValid => UseFinalIK || UseAnimationRigging;
+
+        /// <summary>現在のLookAt Weight</summary>
+        private float CurrentLookAtWeight
+        {
+            get
+            {
+                if (UseFinalIK) return finalIKController.LookAtWeight;
+                if (UseAnimationRigging) return ikController.LookAtWeight;
+                return 0f;
+            }
+        }
+
         private void Start()
         {
+            // FinalIKを優先して検索
+            if (finalIKController == null)
+            {
+                finalIKController = GetComponent<VRMFinalIKController>();
+            }
+
+            // フォールバックでAnimation Rigging
             if (ikController == null)
             {
                 ikController = GetComponent<VRMIKController>();
@@ -57,6 +88,20 @@ namespace RPGDefete.Character
                 storyPlayer = FindObjectOfType<StoryPlayer>();
             }
 
+            // 使用するIKシステムをログ出力
+            if (UseFinalIK)
+            {
+                Debug.Log("[IKTester] Using FinalIK");
+            }
+            else if (UseAnimationRigging)
+            {
+                Debug.Log("[IKTester] Using Animation Rigging");
+            }
+            else
+            {
+                Debug.LogWarning("[IKTester] No valid IK system found");
+            }
+
             // 自動登録
             RegisterToStoryPlayer();
         }
@@ -68,7 +113,7 @@ namespace RPGDefete.Character
             if (ikController != null)
             {
                 storyPlayer.RegisterIKController(characterName, ikController);
-                Debug.Log($"[IKTester] Registered IK controller: {characterName}");
+                Debug.Log($"[IKTester] Registered Animation Rigging IK controller: {characterName}");
             }
 
             // IKターゲットを登録
@@ -131,118 +176,203 @@ namespace RPGDefete.Character
             }
 
             // LookAtターゲット追従
-            if (lookAtEnabled && lookAtTarget != null && ikController != null)
+            if (lookAtEnabled && lookAtTarget != null)
             {
-                ikController.UpdateLookAtTarget(lookAtTarget);
+                if (UseFinalIK)
+                {
+                    finalIKController.UpdateLookAtTarget(lookAtTarget);
+                }
+                else if (UseAnimationRigging)
+                {
+                    ikController.UpdateLookAtTarget(lookAtTarget);
+                }
+            }
+
+            // Hand IKターゲット追従
+            if (handIKEnabled && handIKTarget != null && UseFinalIK)
+            {
+                finalIKController.UpdateHandIKTarget(HandType.Right, handIKTarget);
             }
         }
 
         private void ToggleLookAt()
         {
-            Debug.Log($"[IKTester] ToggleLookAt called. ikController={ikController != null}, IsValid={ikController?.IsValid}, lookAtTarget={lookAtTarget != null}");
-
-            if (ikController == null || !ikController.IsValid)
+            if (!IsAnyIKValid)
             {
-                Debug.LogWarning("[IKTester] IK Controller not valid");
+                Debug.LogWarning("[IKTester] No valid IK system");
                 return;
             }
 
             lookAtEnabled = !lookAtEnabled;
 
-            if (lookAtEnabled && lookAtTarget != null)
+            if (UseFinalIK)
             {
-                Debug.Log($"[IKTester] Enabling LookAt to {lookAtTarget.name} at {lookAtTarget.position}");
-                ikController.SetLookAtTarget(lookAtTarget);
-                StartCoroutine(ikController.SetLookAtWeight(1f));
+                if (lookAtEnabled && lookAtTarget != null)
+                {
+                    Debug.Log($"[IKTester] FinalIK: Enabling LookAt to {lookAtTarget.name}");
+                    finalIKController.SetLookAtTarget(lookAtTarget);
+                    StartCoroutine(finalIKController.SetLookAtWeight(1f));
+                }
+                else
+                {
+                    Debug.Log("[IKTester] FinalIK: Disabling LookAt");
+                    StartCoroutine(finalIKController.SetLookAtWeight(0f));
+                }
             }
-            else
+            else if (UseAnimationRigging)
             {
-                Debug.Log("[IKTester] Disabling LookAt");
-                StartCoroutine(ikController.SetLookAtWeight(0f));
+                if (lookAtEnabled && lookAtTarget != null)
+                {
+                    Debug.Log($"[IKTester] AnimRig: Enabling LookAt to {lookAtTarget.name}");
+                    ikController.SetLookAtTarget(lookAtTarget);
+                    StartCoroutine(ikController.SetLookAtWeight(1f));
+                }
+                else
+                {
+                    Debug.Log("[IKTester] AnimRig: Disabling LookAt");
+                    StartCoroutine(ikController.SetLookAtWeight(0f));
+                }
             }
         }
 
         private void ToggleHandIK()
         {
-            if (ikController == null || !ikController.IsValid)
+            if (!IsAnyIKValid)
             {
-                Debug.LogWarning("[IKTester] IK Controller not valid");
+                Debug.LogWarning("[IKTester] No valid IK system");
                 return;
             }
 
             handIKEnabled = !handIKEnabled;
 
-            if (handIKEnabled && handIKTarget != null)
+            if (UseFinalIK)
             {
-                Debug.Log("[IKTester] Enabling Hand IK (Right)");
-                ikController.SetHandIKTarget(HandType.Right, handIKTarget);
-                StartCoroutine(ikController.SetHandIKWeight(HandType.Right, 1f));
+                if (handIKEnabled && handIKTarget != null)
+                {
+                    Debug.Log("[IKTester] FinalIK: Enabling Right Hand IK");
+                    finalIKController.SetHandIKTarget(HandType.Right, handIKTarget);
+                    StartCoroutine(finalIKController.SetHandIKWeight(HandType.Right, 1f));
+                }
+                else
+                {
+                    Debug.Log("[IKTester] FinalIK: Disabling Right Hand IK");
+                    StartCoroutine(finalIKController.SetHandIKWeight(HandType.Right, 0f));
+                }
             }
-            else
+            else if (UseAnimationRigging)
             {
-                Debug.Log("[IKTester] Disabling Hand IK (Right)");
-                StartCoroutine(ikController.SetHandIKWeight(HandType.Right, 0f));
+                if (handIKEnabled && handIKTarget != null)
+                {
+                    Debug.Log("[IKTester] AnimRig: Enabling Right Hand IK");
+                    ikController.SetHandIKTarget(HandType.Right, handIKTarget);
+                    StartCoroutine(ikController.SetHandIKWeight(HandType.Right, 1f));
+                }
+                else
+                {
+                    Debug.Log("[IKTester] AnimRig: Disabling Right Hand IK");
+                    StartCoroutine(ikController.SetHandIKWeight(HandType.Right, 0f));
+                }
             }
         }
 
         private void ToggleFootIK()
         {
-            if (ikController == null || !ikController.IsValid)
+            if (!IsAnyIKValid)
             {
-                Debug.LogWarning("[IKTester] IK Controller not valid");
+                Debug.LogWarning("[IKTester] No valid IK system");
                 return;
             }
 
             footIKEnabled = !footIKEnabled;
 
-            if (footIKEnabled && footIKTarget != null)
+            if (UseFinalIK)
             {
-                Debug.Log("[IKTester] Enabling Foot IK (Right)");
-                ikController.SetFootIKTarget(FootType.Right, footIKTarget);
-                StartCoroutine(ikController.SetFootIKWeight(FootType.Right, 1f));
+                if (footIKEnabled && footIKTarget != null)
+                {
+                    Debug.Log("[IKTester] FinalIK: Enabling Right Foot IK");
+                    finalIKController.SetFootIKTarget(FootType.Right, footIKTarget);
+                    StartCoroutine(finalIKController.SetFootIKWeight(FootType.Right, 1f));
+                }
+                else
+                {
+                    Debug.Log("[IKTester] FinalIK: Disabling Right Foot IK");
+                    StartCoroutine(finalIKController.SetFootIKWeight(FootType.Right, 0f));
+                }
             }
-            else
+            else if (UseAnimationRigging)
             {
-                Debug.Log("[IKTester] Disabling Foot IK (Right)");
-                StartCoroutine(ikController.SetFootIKWeight(FootType.Right, 0f));
+                if (footIKEnabled && footIKTarget != null)
+                {
+                    Debug.Log("[IKTester] AnimRig: Enabling Right Foot IK");
+                    ikController.SetFootIKTarget(FootType.Right, footIKTarget);
+                    StartCoroutine(ikController.SetFootIKWeight(FootType.Right, 1f));
+                }
+                else
+                {
+                    Debug.Log("[IKTester] AnimRig: Disabling Right Foot IK");
+                    StartCoroutine(ikController.SetFootIKWeight(FootType.Right, 0f));
+                }
             }
         }
 
         private void ToggleHipIK()
         {
-            Debug.Log($"[IKTester] ToggleHipIK called. hipIKTarget={hipIKTarget != null}");
-
-            if (ikController == null || !ikController.IsValid)
+            if (!IsAnyIKValid)
             {
-                Debug.LogWarning("[IKTester] IK Controller not valid");
+                Debug.LogWarning("[IKTester] No valid IK system");
                 return;
             }
 
             hipIKEnabled = !hipIKEnabled;
 
-            if (hipIKEnabled && hipIKTarget != null)
+            if (UseFinalIK)
             {
-                Debug.Log($"[IKTester] Enabling Hip IK to {hipIKTarget.name} at {hipIKTarget.position}");
-                ikController.SetHipIKTarget(hipIKTarget);
-                StartCoroutine(ikController.SetHipIKWeight(1f));
+                if (hipIKEnabled && hipIKTarget != null)
+                {
+                    Debug.Log($"[IKTester] FinalIK: Enabling Body/Hip IK to {hipIKTarget.name}");
+                    finalIKController.SetHipIKTarget(hipIKTarget);
+                    StartCoroutine(finalIKController.SetHipIKWeight(1f));
+                }
+                else
+                {
+                    Debug.Log("[IKTester] FinalIK: Disabling Body/Hip IK");
+                    StartCoroutine(finalIKController.SetHipIKWeight(0f));
+                }
             }
-            else
+            else if (UseAnimationRigging)
             {
-                Debug.Log("[IKTester] Disabling Hip IK");
-                StartCoroutine(ikController.SetHipIKWeight(0f));
+                if (hipIKEnabled && hipIKTarget != null)
+                {
+                    Debug.Log($"[IKTester] AnimRig: Enabling Hip IK to {hipIKTarget.name}");
+                    ikController.SetHipIKTarget(hipIKTarget);
+                    StartCoroutine(ikController.SetHipIKWeight(1f));
+                }
+                else
+                {
+                    Debug.Log("[IKTester] AnimRig: Disabling Hip IK");
+                    StartCoroutine(ikController.SetHipIKWeight(0f));
+                }
             }
         }
 
         private void ClearAllIK()
         {
-            if (ikController == null || !ikController.IsValid)
+            if (!IsAnyIKValid)
             {
-                Debug.LogWarning("[IKTester] IK Controller not valid");
+                Debug.LogWarning("[IKTester] No valid IK system");
                 return;
             }
 
             Debug.Log("[IKTester] Clearing all IK");
-            StartCoroutine(ikController.DisableAllIK());
+
+            if (UseFinalIK)
+            {
+                StartCoroutine(finalIKController.DisableAllIK());
+            }
+            else if (UseAnimationRigging)
+            {
+                StartCoroutine(ikController.DisableAllIK());
+            }
 
             lookAtEnabled = false;
             handIKEnabled = false;
@@ -254,27 +384,31 @@ namespace RPGDefete.Character
         {
             if (!showGUI) return;
 
-            GUILayout.BeginArea(new Rect(630, 10, 280, 350));
+            GUILayout.BeginArea(new Rect(630, 10, 280, 380));
             GUILayout.BeginVertical("box");
 
             GUILayout.Label("IK Tester", GUI.skin.box);
 
-            // IK Controller 状態
-            GUILayout.Label("--- IK Controller ---");
-            if (ikController == null)
+            // IK System 状態
+            GUILayout.Label("--- IK System ---");
+            if (UseFinalIK)
             {
-                GUILayout.Label("IKController: Not Set");
+                GUILayout.Label("System: FinalIK");
+                GUILayout.Label($"FBBIK: {(finalIKController.IsValid ? "Valid" : "Invalid")}");
+                GUILayout.Label($"LookAt: {(finalIKController.HasLookAt ? "Valid" : "Not Set")}");
             }
-            else if (!ikController.IsValid)
+            else if (UseAnimationRigging)
             {
-                GUILayout.Label("IKController: Not Valid");
-                GUILayout.Label("Run 'Setup Rig Structure'");
+                GUILayout.Label("System: Animation Rigging");
+                GUILayout.Label($"Character: {characterName}");
             }
             else
             {
-                GUILayout.Label($"Character: {characterName}");
-                GUILayout.Label($"LookAt Weight: {ikController.LookAtWeight:F2}");
+                GUILayout.Label("System: None");
+                GUILayout.Label("Add FinalIK or AnimRig components");
             }
+
+            GUILayout.Label($"LookAt Weight: {CurrentLookAtWeight:F2}");
 
             GUILayout.Space(5);
 
@@ -283,14 +417,14 @@ namespace RPGDefete.Character
             GUILayout.Label($"LookAt: {(lookAtEnabled ? "ON" : "OFF")}");
             GUILayout.Label($"Hand IK: {(handIKEnabled ? "ON" : "OFF")}");
             GUILayout.Label($"Foot IK: {(footIKEnabled ? "ON" : "OFF")}");
-            GUILayout.Label($"Hip IK: {(hipIKEnabled ? "ON" : "OFF")}");
+            GUILayout.Label($"Hip/Body IK: {(hipIKEnabled ? "ON" : "OFF")}");
 
             GUILayout.Space(10);
             GUILayout.Label("Controls:");
             GUILayout.Label($"  {lookAtTestKey}: Toggle LookAt");
             GUILayout.Label($"  {handIKTestKey}: Toggle Hand IK");
             GUILayout.Label($"  {footIKTestKey}: Toggle Foot IK");
-            GUILayout.Label($"  {hipIKTestKey}: Toggle Hip IK");
+            GUILayout.Label($"  {hipIKTestKey}: Toggle Hip/Body IK");
             GUILayout.Label($"  {clearAllIKKey}: Clear All IK");
             GUILayout.Label($"  {registerKey}: Register to StoryPlayer");
 
