@@ -107,13 +107,21 @@ namespace RPGDefete.Character
             rigBuilder.layers.Add(new RigLayer(rightFootIKRig, true));
             rigBuilder.layers.Add(new RigLayer(hipIKRig, true));
 
-            // 初期Weightを0に設定
-            lookAtRig.weight = 0f;
-            leftHandIKRig.weight = 0f;
-            rightHandIKRig.weight = 0f;
-            leftFootIKRig.weight = 0f;
-            rightFootIKRig.weight = 0f;
-            hipIKRig.weight = 0f;
+            // Rigのweightを1に設定（Constraintのweightで制御するため）
+            lookAtRig.weight = 1f;
+            leftHandIKRig.weight = 1f;
+            rightHandIKRig.weight = 1f;
+            leftFootIKRig.weight = 1f;
+            rightFootIKRig.weight = 1f;
+            hipIKRig.weight = 1f;
+
+            // Constraintの初期weightを0に設定
+            headAimConstraint.weight = 0f;
+            leftHandIKConstraint.weight = 0f;
+            rightHandIKConstraint.weight = 0f;
+            leftFootIKConstraint.weight = 0f;
+            rightFootIKConstraint.weight = 0f;
+            hipConstraint.weight = 0f;
 
             Debug.Log("[VRMRigSetup] Rig structure setup complete");
         }
@@ -138,7 +146,8 @@ namespace RPGDefete.Character
             sourceObjects.Add(new WeightedTransform(lookAtTarget, 1f));
             headAimConstraint.data.sourceObjects = sourceObjects;
 
-            headAimConstraint.data.aimAxis = MultiAimConstraintData.Axis.Z;
+            // VRMモデルの頭ボーンは通常Z軸が前方向だが、-Z（後方）を向いている場合がある
+            headAimConstraint.data.aimAxis = MultiAimConstraintData.Axis.Z_NEG;
             headAimConstraint.data.upAxis = MultiAimConstraintData.Axis.Y;
         }
 
@@ -276,6 +285,9 @@ namespace RPGDefete.Character
             hipConstraint.data.constrainedXAxis = true;
             hipConstraint.data.constrainedYAxis = true;
             hipConstraint.data.constrainedZAxis = true;
+
+            // オフセットを維持（初期位置からの相対移動）
+            hipConstraint.data.maintainOffset = true;
         }
 
         private GameObject CreateChildObject(Transform parent, string name)

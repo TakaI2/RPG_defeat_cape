@@ -139,6 +139,8 @@ namespace RPGDefete.Character
 
         private void ToggleLookAt()
         {
+            Debug.Log($"[IKTester] ToggleLookAt called. ikController={ikController != null}, IsValid={ikController?.IsValid}, lookAtTarget={lookAtTarget != null}");
+
             if (ikController == null || !ikController.IsValid)
             {
                 Debug.LogWarning("[IKTester] IK Controller not valid");
@@ -149,7 +151,7 @@ namespace RPGDefete.Character
 
             if (lookAtEnabled && lookAtTarget != null)
             {
-                Debug.Log("[IKTester] Enabling LookAt");
+                Debug.Log($"[IKTester] Enabling LookAt to {lookAtTarget.name} at {lookAtTarget.position}");
                 ikController.SetLookAtTarget(lookAtTarget);
                 StartCoroutine(ikController.SetLookAtWeight(1f));
             }
@@ -208,6 +210,8 @@ namespace RPGDefete.Character
 
         private void ToggleHipIK()
         {
+            Debug.Log($"[IKTester] ToggleHipIK called. hipIKTarget={hipIKTarget != null}");
+
             if (ikController == null || !ikController.IsValid)
             {
                 Debug.LogWarning("[IKTester] IK Controller not valid");
@@ -218,7 +222,7 @@ namespace RPGDefete.Character
 
             if (hipIKEnabled && hipIKTarget != null)
             {
-                Debug.Log("[IKTester] Enabling Hip IK");
+                Debug.Log($"[IKTester] Enabling Hip IK to {hipIKTarget.name} at {hipIKTarget.position}");
                 ikController.SetHipIKTarget(hipIKTarget);
                 StartCoroutine(ikController.SetHipIKWeight(1f));
             }

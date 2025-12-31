@@ -22,12 +22,12 @@
 
 | 指標 | 値 |
 |------|-----|
-| 全体進捗 | **85%** |
-| 完了タスク | 25個 |
+| 全体進捗 | **76%** |
+| 完了タスク | 22個 |
 | 進行中 | 1個 |
-| 未着手 | 2個 |
+| 未着手 | 6個 |
 | 完了フェーズ | Phase 1-3 (Cloth), Phase 1-3 (Acting) |
-| 現在フェーズ | VRoid Acting System - Phase 3完了 |
+| 現在フェーズ | VRoid Acting System - Phase 3完了、IKテスト待ち |
 
 ### 📅 開発スケジュール
 
@@ -174,27 +174,26 @@ gantt
 - [x] IKTester.cs 作成
 - [x] StoryPlayer.cs にIKコマンド登録
 
-### 🚧 進行中のタスク
+### ✅ Phase 3 IKシステムテスト完了 (2025-12-31)
 
-- [ ] **Phase 3 IKシステムテスト** - 次回実施予定
+**テスト結果:**
 
-### 📋 次回の予定（IKテスト手順）
+| IK機能 | Weight変化 | 動作 | 備考 |
+|--------|----------|------|------|
+| Hand IK (5キー) | ✅ | ✅ 動作 | TwoBoneIKConstraint |
+| Foot IK (6キー) | ✅ | ✅ 動作 | TwoBoneIKConstraint |
+| LookAt (4キー) | ✅ | ⚠️ 要調整 | aimAxis設定調整必要 |
+| Hip IK (7キー) | ✅ | ⚠️ 要調整 | MultiPositionConstraint調整必要 |
 
-1. **Rig構造セットアップ**
-   - VRMキャラクターに `VRMRigSetup` + `VRMIKController` 追加
-   - 右クリック → "Setup Rig Structure" 実行
+**修正内容:**
+- VRMRigSetup: Rig.weight=1, Constraint.weight=0 に変更
+- VRMRigSetup: aimAxisをZ_NEGに変更、maintainOffset追加
+- IKTester/VRMIKController: デバッグログ追加
 
-2. **テスト環境構築**
-   - `IKTester` コンポーネント追加
-   - IKターゲット用空オブジェクト作成（LookAt/Hand/Foot/Hip）
-   - IKTesterにターゲットをアサイン
+### 📋 今後の調整項目
 
-3. **キー操作テスト**
-   - `4`: LookAt ON/OFF
-   - `5`: Hand IK ON/OFF
-   - `6`: Foot IK ON/OFF
-   - `7`: Hip IK ON/OFF
-   - `0`: 全IK解除
+1. **LookAt改善**: VRMモデルの頭ボーンの向きに合わせたaimAxis設定
+2. **Hip IK改善**: MultiPositionConstraint設定の見直し
 
 ### 🚧 現在の課題
 
@@ -421,3 +420,4 @@ dedc590 - Add double-sided glossy cloth shader and materials
 | 2025-12-03 | v0.4.10リリース（chara_testシーン、チュートリアル追加） |
 | 2025-12-29 | 進捗レポート更新、Mermaidガントチャート追加 |
 | 2025-12-31 | v0.5.0リリース（VRoid Character Acting System Phase 1-3完了） |
+| 2025-12-31 | tasks.json更新（VRoid Acting System Phase 1-3完了タスク追加）、進捗メトリクス更新 |

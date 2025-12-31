@@ -1,9 +1,9 @@
 {
   "project": {
-    "name": "RPG_defete - Cloth Physics",
+    "name": "RPG_defete - Cloth Physics & VRoid Acting",
     "startDate": "2025-11-01",
-    "currentVersion": "v0.4.10",
-    "currentPhase": "Cloth Physics Prototyping"
+    "currentVersion": "v0.5.0",
+    "currentPhase": "VRoid Character Acting System"
   },
   "phases": [
     {
@@ -124,6 +124,27 @@
       "dueDate": "2025-12-15",
       "description": "キャラクター立ち絵・セリフ表示システム、ストーリーエディタ。仕様書完成済み(.tmp/)",
       "specFiles": [".tmp/requirements.md", ".tmp/design.md", ".tmp/test_design.md", ".tmp/tasks.md"]
+    },
+    {
+      "id": "task-007",
+      "title": "Phase 3 IKシステムテスト",
+      "phase": "phase4",
+      "priority": "high",
+      "estimatedHours": 2,
+      "actualHours": 2,
+      "status": "completed",
+      "assignee": "Dev Team",
+      "dependencies": [],
+      "startDate": "2025-12-31",
+      "dueDate": "2025-12-31",
+      "completedDate": "2025-12-31",
+      "description": "VRMキャラクターでIKシステムをテスト。Rig構造セットアップ、IKTester操作確認、キー操作テスト(4:LookAt, 5:Hand, 6:Foot, 7:Hip, 0:全解除)",
+      "testResults": {
+        "handIK": "動作確認OK",
+        "footIK": "動作確認OK",
+        "lookAt": "weight変化OK、aimAxis調整必要",
+        "hipIK": "weight変化OK、MultiPositionConstraint調整必要"
+      }
     }
   ],
   "completedTasks": [
@@ -254,13 +275,34 @@
       "completedDate": "2025-12-03",
       "actualHours": 2,
       "notes": "キャラクターテスト用シーンとチュートリアルドキュメントを追加"
+    },
+    {
+      "id": "completed-020",
+      "title": "v0.5.0 Phase 1: VRM Expression Controller",
+      "completedDate": "2025-12-30",
+      "actualHours": 4,
+      "notes": "VRMExpressionController.cs作成、ExpressionCommand.cs作成、ExpressionTester.cs作成、StoryContext/StoryCommandData拡張"
+    },
+    {
+      "id": "completed-021",
+      "title": "v0.5.0 Phase 2: Animation Controller + NavMesh Movement",
+      "completedDate": "2025-12-30",
+      "actualHours": 6,
+      "notes": "VRMAnimationController.cs作成、CharacterNavigator.cs作成、PoseCommand.cs/MoveCommand.cs作成、AnimationMoveTester.cs作成、CombatAnimator対応"
+    },
+    {
+      "id": "completed-022",
+      "title": "v0.5.0 Phase 3: IK System (Animation Rigging)",
+      "completedDate": "2025-12-31",
+      "actualHours": 8,
+      "notes": "Animation Rigging v1.3.0追加、VRMRigSetup.cs/VRMIKController.cs作成、LookAt/Hand/Foot/Hip IKコマンド作成、IKTester.cs作成"
     }
   ],
   "metrics": {
-    "totalEstimatedHours": 70,
-    "totalActualHours": 76.5,
-    "completedTasks": 19,
-    "pendingTasks": 6,
+    "totalEstimatedHours": 72,
+    "totalActualHours": 94.5,
+    "completedTasks": 22,
+    "pendingTasks": 7,
     "overallProgress": 76
   },
   "knownIssues": [

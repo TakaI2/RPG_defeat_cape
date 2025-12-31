@@ -352,13 +352,19 @@ namespace RPGDefete.Character
 
         private IEnumerator TransitionRigWeight(IRigConstraint constraint, float targetWeight, float duration)
         {
-            if (constraint == null) yield break;
+            if (constraint == null)
+            {
+                Debug.LogWarning("[VRMIKController] TransitionRigWeight: constraint is null");
+                yield break;
+            }
 
             // MultiAimConstraintはweightプロパティを直接持つ
             if (constraint is MultiAimConstraint aimConstraint)
             {
                 float startWeight = aimConstraint.weight;
                 float elapsed = 0f;
+
+                Debug.Log($"[VRMIKController] LookAt transition: {startWeight} -> {targetWeight}, duration={duration}");
 
                 while (elapsed < duration)
                 {
@@ -369,6 +375,11 @@ namespace RPGDefete.Character
                 }
 
                 aimConstraint.weight = targetWeight;
+                Debug.Log($"[VRMIKController] LookAt weight set to: {aimConstraint.weight}");
+            }
+            else
+            {
+                Debug.LogWarning($"[VRMIKController] TransitionRigWeight: constraint is not MultiAimConstraint, type={constraint.GetType().Name}");
             }
         }
 
@@ -392,10 +403,16 @@ namespace RPGDefete.Character
 
         private IEnumerator TransitionConstraintWeight(MultiPositionConstraint constraint, float targetWeight, float duration)
         {
-            if (constraint == null) yield break;
+            if (constraint == null)
+            {
+                Debug.LogWarning("[VRMIKController] TransitionConstraintWeight(Hip): constraint is null");
+                yield break;
+            }
 
             float startWeight = constraint.weight;
             float elapsed = 0f;
+
+            Debug.Log($"[VRMIKController] Hip transition: {startWeight} -> {targetWeight}, duration={duration}");
 
             while (elapsed < duration)
             {
@@ -406,6 +423,7 @@ namespace RPGDefete.Character
             }
 
             constraint.weight = targetWeight;
+            Debug.Log($"[VRMIKController] Hip weight set to: {constraint.weight}");
         }
 
         #endregion
