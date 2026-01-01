@@ -77,6 +77,16 @@ namespace RPGDefete.Story
         public Dictionary<string, VRMIKController> IKControllers { get; } = new Dictionary<string, VRMIKController>();
 
         /// <summary>
+        /// Registered FinalIK controllers, keyed by character name
+        /// </summary>
+        public Dictionary<string, VRMFinalIKController> FinalIKControllers { get; } = new Dictionary<string, VRMFinalIKController>();
+
+        /// <summary>
+        /// Registered Eye Gaze controllers, keyed by character name
+        /// </summary>
+        public Dictionary<string, VRMEyeGazeController> EyeGazeControllers { get; } = new Dictionary<string, VRMEyeGazeController>();
+
+        /// <summary>
         /// Registered IK targets (LookAt, Hand, Foot, Hip targets), keyed by target name
         /// </summary>
         public Dictionary<string, Transform> IKTargets { get; } = new Dictionary<string, Transform>();
@@ -309,6 +319,68 @@ namespace RPGDefete.Story
                 return false;
             }
             return IKTargets.TryGetValue(name, out target);
+        }
+
+        /// <summary>
+        /// Register a FinalIK controller
+        /// </summary>
+        public void RegisterFinalIKController(string name, VRMFinalIKController controller)
+        {
+            if (string.IsNullOrEmpty(name) || controller == null) return;
+            FinalIKControllers[name] = controller;
+        }
+
+        /// <summary>
+        /// Unregister a FinalIK controller
+        /// </summary>
+        public void UnregisterFinalIKController(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return;
+            FinalIKControllers.Remove(name);
+        }
+
+        /// <summary>
+        /// Try to get a FinalIK controller
+        /// </summary>
+        public bool TryGetFinalIKController(string name, out VRMFinalIKController controller)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                controller = null;
+                return false;
+            }
+            return FinalIKControllers.TryGetValue(name, out controller);
+        }
+
+        /// <summary>
+        /// Register an Eye Gaze controller
+        /// </summary>
+        public void RegisterEyeGazeController(string name, VRMEyeGazeController controller)
+        {
+            if (string.IsNullOrEmpty(name) || controller == null) return;
+            EyeGazeControllers[name] = controller;
+        }
+
+        /// <summary>
+        /// Unregister an Eye Gaze controller
+        /// </summary>
+        public void UnregisterEyeGazeController(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return;
+            EyeGazeControllers.Remove(name);
+        }
+
+        /// <summary>
+        /// Try to get an Eye Gaze controller
+        /// </summary>
+        public bool TryGetEyeGazeController(string name, out VRMEyeGazeController controller)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                controller = null;
+                return false;
+            }
+            return EyeGazeControllers.TryGetValue(name, out controller);
         }
 
         /// <summary>

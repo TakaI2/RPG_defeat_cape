@@ -145,6 +145,32 @@
         "lookAt": "weight変化OK、aimAxis調整必要",
         "hipIK": "weight変化OK、MultiPositionConstraint調整必要"
       }
+    },
+    {
+      "id": "task-008",
+      "title": "VRM10視線制御（Eye Gaze）実装",
+      "phase": "phase4",
+      "priority": "high",
+      "estimatedHours": 6,
+      "actualHours": 2,
+      "status": "completed",
+      "assignee": "Dev Team",
+      "dependencies": [],
+      "startDate": "2026-01-01",
+      "dueDate": "2026-01-05",
+      "completedDate": "2026-01-01",
+      "description": "Vrm10Instance.LookAtを使用した目玉視線追従システム。頭IK（FinalIK LookAtIK）との連携制御。eyeLookAtコマンドをストーリーシステムに追加",
+      "subtasks": [
+        "VRMEyeGazeController.cs作成（Vrm10Instance.LookAt使用）",
+        "頭IK + 目玉視線の連携制御ロジック",
+        "EyeLookAtCommand.cs作成（ストーリーコマンド）",
+        "StoryCommandDataにeyeLookAtパラメータ追加",
+        "IKTesterにEyeGazeテスト機能追加"
+      ],
+      "implementedFiles": [
+        "Assets/Scripts/Character/VRMEyeGazeController.cs",
+        "Assets/Scripts/Story/Commands/EyeLookAtCommand.cs"
+      ]
     }
   ],
   "completedTasks": [
@@ -306,9 +332,9 @@
     }
   ],
   "metrics": {
-    "totalEstimatedHours": 72,
-    "totalActualHours": 97.5,
-    "completedTasks": 23,
+    "totalEstimatedHours": 78,
+    "totalActualHours": 99.5,
+    "completedTasks": 24,
     "pendingTasks": 7,
     "overallProgress": 77
   },

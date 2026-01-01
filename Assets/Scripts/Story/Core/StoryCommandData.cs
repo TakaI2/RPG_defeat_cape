@@ -148,6 +148,17 @@ namespace RPGDefete.Story
         /// <summary>IK control transition duration in seconds</summary>
         public float ikTransitionDuration = 0.2f;
 
+        // ===== Eye LookAt command parameters =====
+        /// <summary>Eye gaze target name or "none" to disable</summary>
+        public string eyeLookAtTarget;
+        /// <summary>Eye gaze weight (0-1)</summary>
+        [Range(0f, 1f)]
+        public float eyeLookAtWeight = 1f;
+        /// <summary>Eye gaze transition duration in seconds</summary>
+        public float eyeLookAtDuration = 0.3f;
+        /// <summary>Whether to sync head IK with eye gaze</summary>
+        public bool eyeLookAtSyncHead = true;
+
         /// <summary>
         /// Create a deep copy of this command data
         /// </summary>
@@ -207,7 +218,12 @@ namespace RPGDefete.Story
                 hipIKDuration = hipIKDuration,
                 // IK Control command
                 ikEnabled = ikEnabled,
-                ikTransitionDuration = ikTransitionDuration
+                ikTransitionDuration = ikTransitionDuration,
+                // Eye LookAt command
+                eyeLookAtTarget = eyeLookAtTarget,
+                eyeLookAtWeight = eyeLookAtWeight,
+                eyeLookAtDuration = eyeLookAtDuration,
+                eyeLookAtSyncHead = eyeLookAtSyncHead
             };
             return clone;
         }

@@ -14,6 +14,9 @@ namespace RPGDefete.Character
         [Header("参照 - FinalIK (優先)")]
         [SerializeField] private VRMFinalIKController finalIKController;
 
+        [Header("参照 - Eye Gaze")]
+        [SerializeField] private VRMEyeGazeController eyeGazeController;
+
         [Header("参照 - Animation Rigging (フォールバック)")]
         [SerializeField] private VRMIKController ikController;
         [SerializeField] private VRMRigSetup rigSetup;
@@ -24,11 +27,13 @@ namespace RPGDefete.Character
 
         [Header("IKターゲット")]
         [SerializeField] private Transform lookAtTarget;
+        [SerializeField] private Transform eyeGazeTarget;
         [SerializeField] private Transform handIKTarget;
         [SerializeField] private Transform footIKTarget;
         [SerializeField] private Transform hipIKTarget;
 
         [Header("キー設定")]
+        [SerializeField] private KeyCode eyeGazeTestKey = KeyCode.Alpha3;
         [SerializeField] private KeyCode lookAtTestKey = KeyCode.Alpha4;
         [SerializeField] private KeyCode handIKTestKey = KeyCode.Alpha5;
         [SerializeField] private KeyCode footIKTestKey = KeyCode.Alpha6;
@@ -39,6 +44,7 @@ namespace RPGDefete.Character
         [Header("デバッグ")]
         [SerializeField] private bool showGUI = true;
 
+        private bool eyeGazeEnabled = false;
         private bool lookAtEnabled = false;
         private bool handIKEnabled = false;
         private bool footIKEnabled = false;
@@ -81,6 +87,12 @@ namespace RPGDefete.Character
             if (rigSetup == null)
             {
                 rigSetup = GetComponent<VRMRigSetup>();
+            }
+
+            // Eye Gaze Controller
+            if (eyeGazeController == null)
+            {
+                eyeGazeController = GetComponent<VRMEyeGazeController>();
             }
 
             if (storyPlayer == null)
@@ -144,8 +156,13 @@ namespace RPGDefete.Character
 
         private void Update()
         {
+            // Eye Gaze テスト
+            if (Input.GetKeyDown(eyeGazeTestKey))
+            {
+                ToggleEyeGaze();
+            }
             // LookAt テスト
-            if (Input.GetKeyDown(lookAtTestKey))
+            else if (Input.GetKeyDown(lookAtTestKey))
             {
                 ToggleLookAt();
             }
@@ -192,6 +209,38 @@ namespace RPGDefete.Character
             if (handIKEnabled && handIKTarget != null && UseFinalIK)
             {
                 finalIKController.UpdateHandIKTarget(HandType.Right, handIKTarget);
+            }
+        }
+
+        private void ToggleEyeGaze()
+        {
+            if (eyeGazeController == null || !eyeGazeController.IsValid)
+            {
+                Debug.LogWarning("[IKTester] No valid Eye Gaze controller");
+                return;
+            }
+
+            // eyeGazeTargetがあればそちらを使用、なければlookAtTargetにフォールバック
+            Transform target = eyeGazeTarget != null ? eyeGazeTarget : lookAtTarget;
+
+            if (target == null)
+            {
+                Debug.LogWarning("[IKTester] No Eye Gaze target set");
+                return;
+            }
+
+            eyeGazeEnabled = !eyeGazeEnabled;
+
+            if (eyeGazeEnabled)
+            {
+                Debug.Log($"[IKTester] Enabling Eye Gaze to {target.name}");
+                eyeGazeController.SetGazeTarget(target);
+                StartCoroutine(eyeGazeController.EnableGaze());
+            }
+            else
+            {
+                Debug.Log("[IKTester] Disabling Eye Gaze");
+                StartCoroutine(eyeGazeController.DisableGaze());
             }
         }
 
@@ -374,6 +423,13 @@ namespace RPGDefete.Character
                 StartCoroutine(ikController.DisableAllIK());
             }
 
+            // Eye Gazeも無効化
+            if (eyeGazeController != null)
+            {
+                StartCoroutine(eyeGazeController.DisableGaze());
+            }
+
+            eyeGazeEnabled = false;
             lookAtEnabled = false;
             handIKEnabled = false;
             footIKEnabled = false;
@@ -412,20 +468,36 @@ namespace RPGDefete.Character
 
             GUILayout.Space(5);
 
+            // Eye Gaze 状態
+            GUILayout.Label("--- Eye Gaze ---");
+            if (eyeGazeController != null && eyeGazeController.IsValid)
+            {
+                GUILayout.Label($"Eye Gaze: {(eyeGazeEnabled ? "ON" : "OFF")}");
+                GUILayout.Label($"Weight: {eyeGazeController.CurrentWeight:F2}");
+                GUILayout.Label($"Yaw/Pitch: {eyeGazeController.CurrentYaw:F1}/{eyeGazeController.CurrentPitch:F1}");
+            }
+            else
+            {
+                GUILayout.Label("Eye Gaze: Not Available");
+            }
+
+            GUILayout.Space(5);
+
             // IK状態
             GUILayout.Label("--- IK States ---");
-            GUILayout.Label($"LookAt: {(lookAtEnabled ? "ON" : "OFF")}");
+            GUILayout.Label($"Head LookAt: {(lookAtEnabled ? "ON" : "OFF")}");
             GUILayout.Label($"Hand IK: {(handIKEnabled ? "ON" : "OFF")}");
             GUILayout.Label($"Foot IK: {(footIKEnabled ? "ON" : "OFF")}");
             GUILayout.Label($"Hip/Body IK: {(hipIKEnabled ? "ON" : "OFF")}");
 
             GUILayout.Space(10);
             GUILayout.Label("Controls:");
-            GUILayout.Label($"  {lookAtTestKey}: Toggle LookAt");
+            GUILayout.Label($"  {eyeGazeTestKey}: Toggle Eye Gaze");
+            GUILayout.Label($"  {lookAtTestKey}: Toggle Head LookAt");
             GUILayout.Label($"  {handIKTestKey}: Toggle Hand IK");
             GUILayout.Label($"  {footIKTestKey}: Toggle Foot IK");
             GUILayout.Label($"  {hipIKTestKey}: Toggle Hip/Body IK");
-            GUILayout.Label($"  {clearAllIKKey}: Clear All IK");
+            GUILayout.Label($"  {clearAllIKKey}: Clear All");
             GUILayout.Label($"  {registerKey}: Register to StoryPlayer");
 
             GUILayout.EndVertical();

@@ -92,7 +92,9 @@ namespace RPGDefete.Story
                 { "handik", new HandIKCommand() },
                 { "footik", new FootIKCommand() },
                 { "hipik", new HipIKCommand() },
-                { "ikcontrol", new IKControlCommand() }
+                { "ikcontrol", new IKControlCommand() },
+                // Eye gaze command
+                { "eyelookat", new EyeLookAtCommand() }
             };
         }
 
