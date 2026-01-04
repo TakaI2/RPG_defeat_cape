@@ -25,6 +25,8 @@ Phase 2: インタラクションシステム（ポイント・タグ・行動�
     ↓
 Phase 3: 行動システム（各アクション実装）
     ↓
+Phase 3.5: 指制御・タッチ反応システム ★NEW
+    ↓
 Phase 4: キャラクターシステム（Player/NPC統合）
     ↓
 Phase 5: 戦闘システム（攻撃・魔法・敵）
@@ -169,6 +171,51 @@ public abstract class ActionBase
 
 ---
 
+## Phase 3.5: 指制御・タッチ反応システム ★NEW
+
+### 3.5.1 VRM指制御システム
+**ファイル**: `Assets/Scripts/Character/VRMFingerController.cs`
+
+| 機能 | 説明 |
+|------|------|
+| 指ポーズプリセット | Open, Fist, Point, Pinch, Grip, Tickle, Scratch等 |
+| ポーズ遷移 | スムーズな補間でポーズ切り替え |
+| 個別指制御 | 特定の指だけを動かす |
+
+```
+VRMの指ボーン構造（片手15ボーン）:
+├── Thumb1 → Thumb2 → Thumb3   (親指)
+├── Index1 → Index2 → Index3   (人差し指) ← ボタン押しに使用
+├── Middle1 → Middle2 → Middle3 (中指)
+├── Ring1 → Ring2 → Ring3      (薬指)
+└── Little1 → Little2 → Little3 (小指)
+```
+
+### 3.5.2 指モーションシステム
+**ファイル**: `Assets/Scripts/Character/FingerMotionController.cs`
+
+| モーション | 説明 | 周波数 |
+|-----------|------|--------|
+| Scratch | 掻く（位相をずらした波打ち） | 4Hz |
+| Tickle | くすぐる（高速+ノイズ） | 8Hz |
+| Caress | 撫でる（ゆっくり波打ち） | 1.5Hz |
+
+### 3.5.3 タッチ反応システム
+**ファイル**: `Assets/Scripts/Character/TouchReactionController.cs`
+
+| タッチ種類 | 部位 | 表情反応 | 体の反応 |
+|-----------|------|---------|---------|
+| Caress | Head | happy | 小さく揺れる |
+| Caress | Face | embarrassed | 少し揺れる |
+| Tickle | Belly | laugh | 大きくくねる |
+| Tickle | Foot | laugh | 激しく動く |
+| Scratch | Back | content | 気持ちよさそう |
+| Poke | Shoulder | surprised | ビクッとする |
+
+**依存**: VRMFingerController, VRMExpressionController, VRMFinalIKController
+
+---
+
 ## Phase 4: キャラクターシステム
 
 ### 4.1 統合キャラクターPrefab
@@ -287,6 +334,8 @@ HP減少
 | 4 | 座って食事する | sit, grab, eat, 表情 |
 | 5 | NPCと会話 | talk, LookAt, 表情遷移 |
 | 6 | 複合行動テスト | 全機能統合 |
+| 7 | NPCをくすぐる | 指制御, tickle, 表情反応, 体の揺れ ★NEW |
+| 8 | スイッチを押す | 指(Point), touch, IK ★NEW |
 
 ---
 
@@ -313,8 +362,13 @@ gantt
     日常行動                :p3c, after p3b, 5d
     感情行動                :p3d, after p3c, 3d
 
+    section Phase 3.5
+    指制御システム          :p35a, after p3d, 2d
+    指モーション            :p35b, after p35a, 2d
+    タッチ反応システム      :p35c, after p35b, 3d
+
     section Phase 4
-    GameCharacter統合       :p4a, after p3d, 3d
+    GameCharacter統合       :p4a, after p35c, 3d
     感情システム            :p4b, after p4a, 2d
     NPC自律行動             :p4c, after p4b, 4d
 
@@ -361,7 +415,10 @@ Assets/Scripts/
 │       └── HugAction.cs
 ├── Character/
 │   ├── GameCharacter.cs
-│   └── EmotionSystem.cs
+│   ├── EmotionSystem.cs
+│   ├── VRMFingerController.cs      ★NEW
+│   ├── FingerMotionController.cs   ★NEW
+│   └── TouchReactionController.cs  ★NEW
 ├── AI/
 │   └── NPCBehaviorController.cs
 ├── Combat/
@@ -374,4 +431,9 @@ Assets/Scripts/
 ---
 
 **作成日**: 2026-01-05
-**バージョン**: 1.0
+**更新日**: 2026-01-05
+**バージョン**: 1.1
+
+### 変更履歴
+- v1.1: Phase 3.5（指制御・タッチ反応システム）を追加
+- v1.0: 初版作成
