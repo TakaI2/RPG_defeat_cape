@@ -71,19 +71,48 @@ namespace RPG.Combat
         [Header("ダメージ")]
         [Tooltip("基本ダメージ")]
         public float baseDamage = 10f;
-        
+
         [Tooltip("ダメージ倍率")]
         public float damageMultiplier = 1f;
-        
+
+        [Tooltip("ダメージタイプ")]
+        public DamageType damageType = DamageType.Physical;
+
+        [Tooltip("魔法属性")]
+        public MagicElement element = MagicElement.None;
+
         [Tooltip("クリティカル率 (0-1)")]
         [Range(0f, 1f)]
         public float criticalRate = 0.1f;
-        
+
         [Tooltip("クリティカルダメージ倍率")]
         public float criticalMultiplier = 1.5f;
-        
+
         [Tooltip("ノックバック力")]
         public float knockbackForce = 5f;
+
+        [Header("投射物設定")]
+        [Tooltip("投射物を使用するか")]
+        public bool useProjectile = false;
+
+        [Tooltip("投射物プレハブ")]
+        public GameObject projectilePrefab;
+
+        [Tooltip("投射物の速度")]
+        public float projectileSpeed = 15f;
+
+        [Tooltip("投射物の生存時間")]
+        public float projectileLifetime = 3f;
+
+        [Tooltip("ホーミング機能")]
+        public bool projectileHoming = false;
+
+        [Tooltip("ホーミング強度")]
+        [Range(0f, 20f)]
+        public float homingStrength = 5f;
+
+        [Tooltip("投射物発射位置オフセット")]
+        public Vector3 projectileSpawnOffset = new Vector3(0, 1.2f, 0.5f);
 
         [Header("クールダウン")]
         [Tooltip("クールダウン時間 (秒)")]
@@ -168,6 +197,30 @@ namespace RPG.Combat
         public bool RollCritical()
         {
             return Random.value < criticalRate;
+        }
+
+        /// <summary>
+        /// DamageInfoを生成
+        /// </summary>
+        public DamageInfo CreateDamageInfo(
+            GameObject attacker,
+            Vector3 hitPoint,
+            Vector3 hitNormal,
+            Vector3 knockbackDirection)
+        {
+            bool isCritical = RollCritical();
+            float damage = CalculateDamage(isCritical);
+
+            return new DamageInfo(
+                damage,
+                isCritical,
+                knockbackForce,
+                knockbackDirection,
+                attacker,
+                this,
+                hitPoint,
+                hitNormal
+            );
         }
     }
 }

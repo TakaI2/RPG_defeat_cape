@@ -13,12 +13,16 @@ namespace RPG.Combat
         [Header("参照")]
         [Tooltip("Animatorコンポーネント")]
         [SerializeField] private Animator animator;
-        
+
         [Tooltip("ヒットボックス (複数可)")]
         [SerializeField] private HitBox[] hitBoxes;
-        
+
         [Tooltip("SE再生用AudioSource")]
         [SerializeField] private AudioSource audioSource;
+
+        [Header("投射物設定")]
+        [Tooltip("投射物発射位置 (nullの場合はキャラクター位置)")]
+        [SerializeField] private Transform projectileSpawnPoint;
 
         [Header("設定")]
         [Tooltip("スキル実行中は移動を無効化")]
@@ -191,12 +195,28 @@ namespace RPG.Combat
             // 表情変更 (VRM用 - 別途実装)
             // TODO: VRM ExpressionController と連携
             
-            // エフェクト生成タイミングを待つ
-            if (skill.effectPrefab != null && skill.animation != null)
+            // エフェクト/投射物生成タイミングを待つ
+            if (skill.animation != null)
             {
                 float effectTime = skill.animation.length * skill.effectTiming / skill.animationSpeed;
                 yield return new WaitForSeconds(effectTime);
-                SpawnEffect(skill);
+
+                // エフェクト生成
+                if (skill.effectPrefab != null)
+                {
+                    SpawnEffect(skill);
+                }
+
+                // 投射物発射
+                if (skill.useProjectile)
+                {
+                    SpawnProjectile(skill, null); // TODO: ターゲット指定対応
+                }
+            }
+            else if (skill.useProjectile)
+            {
+                // アニメーションがない場合は即時発射
+                SpawnProjectile(skill, null);
             }
             
             // アニメーション終了を待つ
@@ -298,23 +318,100 @@ namespace RPG.Combat
         private void SpawnEffect(SkillData skill)
         {
             if (skill.effectPrefab == null) return;
-            
+
             Vector3 position = transform.position + transform.TransformDirection(skill.effectOffset);
             Quaternion rotation = transform.rotation;
-            
+
             GameObject effect = Instantiate(skill.effectPrefab, position, rotation);
-            
+
             if (skill.effectFollowTarget)
             {
                 effect.transform.SetParent(transform);
             }
-            
+
             // 自動削除 (ParticleSystemの場合)
             var ps = effect.GetComponent<ParticleSystem>();
             if (ps != null && !ps.main.loop)
             {
                 Destroy(effect, ps.main.duration + ps.main.startLifetime.constantMax);
             }
+        }
+
+        /// <summary>
+        /// 投射物を発射
+        /// </summary>
+        private void SpawnProjectile(SkillData skill, Transform target = null)
+        {
+            if (!skill.useProjectile || skill.projectilePrefab == null)
+            {
+                return;
+            }
+
+            // 発射位置
+            Vector3 spawnPos;
+            if (projectileSpawnPoint != null)
+            {
+                spawnPos = projectileSpawnPoint.position;
+            }
+            else
+            {
+                spawnPos = transform.position + transform.TransformDirection(skill.projectileSpawnOffset);
+            }
+
+            // 発射方向
+            Vector3 direction;
+            if (target != null)
+            {
+                direction = (target.position - spawnPos).normalized;
+            }
+            else
+            {
+                direction = transform.forward;
+            }
+
+            // 投射物生成
+            var projectileObj = Instantiate(skill.projectilePrefab, spawnPos, Quaternion.LookRotation(direction));
+
+            // MagicProjectile初期化
+            var magicProjectile = projectileObj.GetComponent<MagicProjectile>();
+            if (magicProjectile != null)
+            {
+                magicProjectile.Initialize(skill, gameObject, direction, target);
+            }
+            else
+            {
+                // 旧Projectileとの互換性
+                var projectile = projectileObj.GetComponent<Projectile>();
+                if (projectile != null)
+                {
+                    projectile.Initialize(
+                        direction,
+                        gameObject,
+                        skill.CalculateDamage(false),
+                        skill.damageType,
+                        skill.element,
+                        target
+                    );
+                }
+            }
+
+            if (debugMode)
+            {
+                Debug.Log($"[SkillExecutor] Spawned projectile for {skill.skillName}");
+            }
+        }
+
+        /// <summary>
+        /// 投射物スキルを実行（外部から呼び出し可能）
+        /// </summary>
+        public void FireProjectile(SkillData skill, Transform target = null)
+        {
+            if (skill == null || !skill.useProjectile)
+            {
+                return;
+            }
+
+            SpawnProjectile(skill, target);
         }
 
         private void HandleHit(DamageInfo damageInfo, GameObject target)
