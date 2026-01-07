@@ -1,6 +1,6 @@
 # プロジェクトステータス
 
-最終更新: 2025-12-31 (v0.5.0)
+最終更新: 2026-01-07 (v0.5.4)
 
 ---
 
@@ -13,8 +13,8 @@
 | Unity バージョン | 6000.0.46f1 |
 | レンダーパイプライン | Universal Render Pipeline (URP) v17.0.4 |
 | プロジェクトタイプ | RPG with Advanced Cloth Physics |
-| 現在のバージョン | v0.5.0 |
-| 開発段階 | VRoid Character Acting System |
+| 現在のバージョン | v0.5.4 |
+| 開発段階 | RPG統合・コアシステム実装 |
 
 ---
 
@@ -22,12 +22,12 @@
 
 | 指標 | 値 |
 |------|-----|
-| 全体進捗 | **76%** |
-| 完了タスク | 22個 |
-| 進行中 | 1個 |
-| 未着手 | 6個 |
-| 完了フェーズ | Phase 1-3 (Cloth), Phase 1-3 (Acting) |
-| 現在フェーズ | VRoid Acting System - Phase 3完了、IKテスト待ち |
+| 全体進捗 | **83%** |
+| 完了タスク | 27個 |
+| 進行中 | 2個 |
+| 未着手 | 5個 |
+| 完了フェーズ | Phase 1-3 (Cloth Physics), VRoid Acting System |
+| 現在フェーズ | Phase 4: RPG統合・コアシステム統合テスト |
 
 ### 📅 開発スケジュール
 
@@ -42,7 +42,15 @@ gantt
     section Phase 3
     マルチポイントシステム   :done, phase3, 2025-11-15, 2025-11-25
     section Phase 4
-    RPG統合・VR対応        :active, phase4, 2025-11-25, 2025-12-31
+    RPG統合・VR対応        :active, phase4, 2025-11-25, 2026-01-31
+    section 最近の成果
+    FinalIK移行 v0.5.1      :done, 2026-01-01, 1d
+    MagicProjectile v0.5.2  :done, 2026-01-06, 1d
+    MagicSystem v0.5.3      :done, 2026-01-06, 1d
+    コアシステム v0.5.4     :done, 2026-01-07, 1d
+    section 進行中
+    コアシステム統合テスト   :active, task9, 2026-01-07, 2026-01-10
+    ストーリーシステム       :active, task6, 2025-12-04, 2026-01-15
 ```
 
 ---
@@ -174,6 +182,31 @@ gantt
 - [x] IKTester.cs 作成
 - [x] StoryPlayer.cs にIKコマンド登録
 
+#### v0.5.1 (FinalIK移行) - 2026-01-01
+- [x] Animation RiggingからFinalIKへ移行
+- [x] VRMFinalIKController.cs作成（FullBodyBipedIK + LookAtIK使用）
+- [x] IKTester.csをFinalIK対応に更新
+- [x] 全IK機能（LookAt/Hand/Foot/Body）動作確認完了
+- [x] VRM10視線制御（Eye Gaze）実装（VRMEyeGazeController.cs）
+
+#### v0.5.2 (MagicProjectile) - 2026-01-06
+- [x] MagicProjectileの衝突検出・ダメージ適用テスト完了
+- [x] TestEnemyへの25ダメージ/発を確認
+
+#### v0.5.3 (MagicSystem) - 2026-01-06
+- [x] MagicSystem.cs作成（Player/Enemy共通魔法発射ファサード）
+- [x] EnemyMagicController.cs作成（Enemy用魔法制御）
+- [x] SkillDataCreator.cs作成（テスト用スキル作成エディタ）
+
+#### v0.5.4 (コアシステム) - 2026-01-07 **最新**
+- [x] MouseInputController.cs（右クリ移動/左クリアクション）
+- [x] GameCharacter.cs（HP/感情/VRM統合）
+- [x] InteractionPoint.cs（インタラクションポイント）
+- [x] OrbitCamera.cs（障害物回避/フォーカス）
+- [x] InteractableObject.cs（属性フラグ/サイズ分類）
+- [x] ActionSystem.cs（ActionBase/ActionExecutor）
+- [x] BasicActions.cs（8種類の基本アクション：Attack/Magic/Grab/Touch/Talk/Sit/Kiss/Look）
+
 ### ✅ Phase 3 IKシステムテスト完了 (2025-12-31)
 
 **テスト結果:**
@@ -206,14 +239,17 @@ gantt
 - ~~cape2移動後に頂点がgrabpointからずれる問題~~ → v0.4.1で解決
 - ~~VRMRigSetup/VRMIKControllerコンパイルエラー~~ → v0.5.0で解決
 
-### ⏳ 今後の予定 (VRoid Acting System)
+### ⏳ 今後の予定 (Phase 4)
 
 | 優先度 | タスク | 状態 |
 |--------|--------|------|
-| 🔴 High | Phase 3 IKシステムテスト | 次回 |
-| 🟡 Medium | Phase 4 ラグドール化（オプション） | 未着手 |
-| 🟡 Medium | ストーリーシステム実践テスト | 未着手 |
-| 🟢 Low | VRコントローラー統合 | 未着手 |
+| 🔴 High | コアシステム統合テスト (task-009) | 🚧 進行中 |
+| 🔴 High | ストーリー・メッセージウィンドウシステム (task-006) | 🚧 進行中 |
+| 🔴 High | VRコントローラー入力対応 (task-001) | ⏳ 未着手 |
+| 🔴 High | パフォーマンス最適化 (task-002) | ⏳ 未着手 |
+| 🟡 Medium | RPGキャラクターシステム統合 (task-003) | ⏳ 未着手 |
+| 🟡 Medium | 布グラビング活用ゲームプレイ (task-004) | ⏳ 未着手 |
+| 🟢 Low | マルチプレイヤー対応検討 (task-005) | ⏳ 未着手 |
 
 ---
 
@@ -421,3 +457,9 @@ dedc590 - Add double-sided glossy cloth shader and materials
 | 2025-12-29 | 進捗レポート更新、Mermaidガントチャート追加 |
 | 2025-12-31 | v0.5.0リリース（VRoid Character Acting System Phase 1-3完了） |
 | 2025-12-31 | tasks.json更新（VRoid Acting System Phase 1-3完了タスク追加）、進捗メトリクス更新 |
+| 2026-01-01 | v0.5.1リリース（FinalIKへの移行完了）|
+| 2026-01-01 | VRM10視線制御（Eye Gaze）実装完了 |
+| 2026-01-06 | v0.5.2リリース（MagicProjectile動作テスト完了）|
+| 2026-01-06 | v0.5.3リリース（MagicSystem & EnemyMagicController実装）|
+| 2026-01-07 | v0.5.4リリース（コアシステム実装：Input/GameCharacter/Camera/Interaction/Action）|
+| 2026-01-07 | 進捗レポート更新、全体進捗83%に到達 |

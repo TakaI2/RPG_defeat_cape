@@ -171,6 +171,51 @@
         "Assets/Scripts/Character/VRMEyeGazeController.cs",
         "Assets/Scripts/Story/Commands/EyeLookAtCommand.cs"
       ]
+    },
+    {
+      "id": "task-009",
+      "title": "コアシステム統合テスト",
+      "phase": "phase4",
+      "priority": "high",
+      "estimatedHours": 4,
+      "actualHours": 2,
+      "status": "completed",
+      "assignee": "Dev Team",
+      "dependencies": [],
+      "startDate": "2026-01-07",
+      "dueDate": "2026-01-10",
+      "completedDate": "2026-01-07",
+      "description": "v0.5.4で実装したコアシステムの統合テスト。expression_testシーンでmeguキャラクターを使用",
+      "subtasks": [
+        "meguにGameCharacter/ActionExecutorコンポーネント追加（Inspector手動）",
+        "OrbitCameraのターゲット設定（Inspector手動）",
+        "MouseInputController設定とテスト",
+        "AttackAction/MagicAction動作確認",
+        "InteractableObject配置とGrab/Touch/Sitテスト",
+        "TalkAction動作確認"
+      ],
+      "testScene": "expression_test",
+      "testCharacter": "megu",
+      "implementedSystems": [
+        "01 Input System - MouseInputController.cs",
+        "04 GameCharacter - GameCharacter.cs, InteractionPoint.cs",
+        "06 Camera System - OrbitCamera.cs",
+        "02 Interaction System - InteractableObject.cs",
+        "03 Action System - ActionSystem.cs, BasicActions.cs"
+      ],
+      "testResults": {
+        "カメラ操作": "✅ 右ドラッグ回転・ホイールズーム動作確認",
+        "移動": "✅ 右クリック移動動作確認",
+        "ホバー検出": "✅ InteractableObject属性に基づくアクション判定動作",
+        "InteractableObject": "✅ Grabbable→Grab, Sittable→Sit, Touchable→Touch 正常判定",
+        "ActionExecutor": "✅ 8アクション登録確認",
+        "GameCharacter": "✅ 初期化・ダメージ処理動作確認"
+      },
+      "fixes": [
+        "ActionExecutor.csをActionSystem.csから分離（Unityファイル名制約対応）",
+        "MouseInputController: InteractableObject属性認識を追加"
+      ],
+      "notes": "コアシステム統合テスト完了。左クリックアクション実行は次回テスト予定"
     }
   ],
   "completedTasks": [
@@ -329,14 +374,48 @@
       "completedDate": "2026-01-01",
       "actualHours": 3,
       "notes": "Animation RiggingからFinalIKへ移行。VRMFinalIKController.cs作成（FullBodyBipedIK + LookAtIK使用）。IKTester.csをFinalIK対応に更新。全IK機能（LookAt/Hand/Foot/Body）動作確認完了"
+    },
+    {
+      "id": "completed-024",
+      "title": "v0.5.2: MagicProjectile動作テスト完了",
+      "completedDate": "2026-01-06",
+      "actualHours": 1,
+      "notes": "MagicProjectileの衝突検出・ダメージ適用テスト完了。TestEnemyへの25ダメージ/発を確認。デバッグログ追加（OnTriggerEnter, ApplyDamageToTarget, EnemyController.TakeDamage）"
+    },
+    {
+      "id": "completed-025",
+      "title": "v0.5.3: MagicSystem & EnemyMagicController実装",
+      "completedDate": "2026-01-06",
+      "actualHours": 2,
+      "notes": "MagicSystem.cs（Player/Enemy共通魔法発射ファサード）作成。EnemyMagicController.cs（Enemy用魔法制御）作成。SkillDataCreator.cs（テスト用スキル作成エディタ）作成。Mキーで魔法発射テスト成功"
+    },
+    {
+      "id": "completed-026",
+      "title": "v0.5.4: コアシステム実装（Input/GameCharacter/Camera/Interaction/Action）",
+      "completedDate": "2026-01-07",
+      "actualHours": 4,
+      "notes": "仕様書01-07に基づくコアシステム実装完了。MouseInputController（右クリ移動/左クリアクション）、GameCharacter（HP/感情/VRM統合）、OrbitCamera（障害物回避/フォーカス）、InteractableObject（属性フラグ/サイズ分類）、ActionSystem（ActionBase/ActionExecutor/8種類の基本アクション）。全てコンパイル成功、PlayMode初期化ログ確認済み",
+      "implementedFiles": [
+        "Assets/Scripts/Input/MouseInputController.cs",
+        "Assets/Scripts/Character/GameCharacter.cs",
+        "Assets/Scripts/Character/InteractionPoint.cs",
+        "Assets/Scripts/Camera/OrbitCamera.cs",
+        "Assets/Scripts/Interaction/InteractableObject.cs",
+        "Assets/Scripts/Action/ActionSystem.cs",
+        "Assets/Scripts/Action/Actions/BasicActions.cs"
+      ],
+      "namespaceConflictsFixes": [
+        "RPG.Camera vs UnityEngine.Camera - 完全修飾名使用",
+        "RPG.Input vs UnityEngine.Input - 完全修飾名使用"
+      ]
     }
   ],
   "metrics": {
-    "totalEstimatedHours": 78,
-    "totalActualHours": 99.5,
-    "completedTasks": 24,
-    "pendingTasks": 7,
-    "overallProgress": 77
+    "totalEstimatedHours": 82,
+    "totalActualHours": 108.5,
+    "completedTasks": 28,
+    "pendingTasks": 6,
+    "overallProgress": 85
   },
   "knownIssues": [
     {

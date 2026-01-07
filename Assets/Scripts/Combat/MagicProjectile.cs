@@ -229,11 +229,30 @@ namespace RPG.Combat
 
         private void OnTriggerEnter(Collider other)
         {
-            if (_owner != null && other.gameObject == _owner) return;
-            if (!string.IsNullOrEmpty(_ownerTag) && other.CompareTag(_ownerTag)) return;
-            if (other.GetComponent<MagicProjectile>() != null) return;
-            if (other.GetComponent<Projectile>() != null) return;
+            Debug.Log($"[MagicProjectile] OnTriggerEnter: {other.name}, tag={other.tag}");
 
+            if (_owner != null && other.gameObject == _owner)
+            {
+                Debug.Log($"[MagicProjectile] Skipped: owner ({_owner.name})");
+                return;
+            }
+            if (!string.IsNullOrEmpty(_ownerTag) && other.CompareTag(_ownerTag))
+            {
+                Debug.Log($"[MagicProjectile] Skipped: same tag ({_ownerTag})");
+                return;
+            }
+            if (other.GetComponent<MagicProjectile>() != null)
+            {
+                Debug.Log("[MagicProjectile] Skipped: is MagicProjectile");
+                return;
+            }
+            if (other.GetComponent<Projectile>() != null)
+            {
+                Debug.Log("[MagicProjectile] Skipped: is Projectile");
+                return;
+            }
+
+            Debug.Log($"[MagicProjectile] Applying damage to: {other.name}");
             ApplyDamageToTarget(other);
             SpawnImpactEffect();
             Destroy(gameObject);
@@ -245,8 +264,11 @@ namespace RPG.Combat
             Vector3 hitNormal = (transform.position - hitPoint).normalized;
             Vector3 knockbackDir = _direction;
 
+            Debug.Log($"[MagicProjectile] ApplyDamageToTarget: _skillData={(_skillData != null ? _skillData.skillName : "null")}, DamageSystem={DamageSystem.Instance != null}");
+
             if (_skillData != null && DamageSystem.Instance != null)
             {
+                Debug.Log($"[MagicProjectile] Using SkillData path, damage={_skillData.baseDamage}");
                 var damageInfo = DamageInfo.FromSkill(
                     _skillData,
                     _owner,
@@ -259,6 +281,7 @@ namespace RPG.Combat
             }
             else if (DamageSystem.Instance != null)
             {
+                Debug.Log($"[MagicProjectile] Using direct damage path, damage={damage}, element={element}");
                 DamageSystem.Instance.ApplyDamage(
                     target.gameObject,
                     damage,

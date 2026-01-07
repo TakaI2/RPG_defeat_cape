@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5be7214c7170bb449b351730c8ffbad0, type: 3}
+  m_Name: Fireball
+  m_EditorClassIdentifier: 
+  skillName: Fireball
+  description: "\u708E\u306E\u5F3E\u3092\u767A\u5C04\u3059\u308B"
+  skillType: 2
+  icon: {fileID: 0}
+  animation: {fileID: 0}
+  animationSpeed: 1
+  animationTrigger: 
+  baseDamage: 30
+  damageMultiplier: 1
+  damageType: 1
+  element: 1
+  criticalRate: 0.1
+  criticalMultiplier: 1.5
+  knockbackForce: 3
+  useProjectile: 1
+  projectilePrefab: {fileID: 8626799663771116096, guid: b77cd40ddd199484b99f645d22f73595, type: 3}
+  projectileSpeed: 15
+  projectileLifetime: 3
+  projectileHoming: 0
+  homingStrength: 5
+  projectileSpawnOffset: {x: 0, y: 1.2, z: 0.5}
+  cooldown: 3
+  cost: 0
+  expressionName: Neutral
+  expressionWeight: 1
+  expressionDuration: 0.5
+  effectPrefab: {fileID: 0}
+  effectTiming: 0.3
+  effectOffset: {x: 0, y: 0, z: 0}
+  effectFollowTarget: 0
+  hitEffectPrefab: {fileID: 0}
+  hitShakeIntensity: 0.2
+  activationSound: {fileID: 0}
+  hitSound: {fileID: 0}
+  soundVolume: 1
+  useCameraCutIn: 0
+  cutInData:
+    cutInSprite: {fileID: 0}
+    duration: 0.5
+    zoomMultiplier: 1.5
+    slowMotionScale: 0.3
+    shakeIntensity: 0.5
+  nextComboSkill: {fileID: 0}
+  comboWindow: 0.5

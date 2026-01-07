@@ -49,25 +49,25 @@ namespace RPG.Combat
             }
 
             // 1キー: 単体ダメージ
-            if (Input.GetKeyDown(singleDamageKey))
+            if (UnityEngine.Input.GetKeyDown(singleDamageKey))
             {
                 TestSingleDamage();
             }
 
             // 2キー: 範囲ダメージ
-            if (Input.GetKeyDown(areaDamageKey))
+            if (UnityEngine.Input.GetKeyDown(areaDamageKey))
             {
                 TestAreaDamage();
             }
 
             // 3キー: 属性ダメージ
-            if (Input.GetKeyDown(criticalDamageKey))
+            if (UnityEngine.Input.GetKeyDown(criticalDamageKey))
             {
                 TestElementalDamage();
             }
 
             // 4キー: 投射物テスト
-            if (Input.GetKeyDown(projectileKey))
+            if (UnityEngine.Input.GetKeyDown(projectileKey))
             {
                 TestProjectile();
             }

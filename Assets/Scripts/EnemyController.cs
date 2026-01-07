@@ -302,6 +302,7 @@ public class EnemyController : MonoBehaviour, IDamageable
     {
         if (IsDead) return;
 
+        Debug.Log($"[EnemyController] {enemyName} took {damageInfo.damage} damage! HP: {_currentHP} -> {_currentHP - damageInfo.damage}");
         _currentHP = Mathf.Max(0, _currentHP - damageInfo.damage);
         OnHPChanged?.Invoke(_currentHP, maxHP);
         OnDamaged?.Invoke(damageInfo.damage);

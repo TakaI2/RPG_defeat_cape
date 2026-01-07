@@ -115,9 +115,9 @@ namespace RPG.Combat
             SetColor(color);
 
             // カメラに向ける
-            if (faceCamera && Camera.main != null)
+            if (faceCamera && UnityEngine.Camera.main != null)
             {
-                transform.LookAt(Camera.main.transform);
+                transform.LookAt(UnityEngine.Camera.main.transform);
                 transform.Rotate(0, 180, 0);
             }
         }

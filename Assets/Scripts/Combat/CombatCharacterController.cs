@@ -54,9 +54,9 @@ namespace RPG.Combat
             characterController = GetComponent<CharacterController>();
             skillExecutor = GetComponent<SkillExecutor>();
             
-            if (cameraTransform == null && Camera.main != null)
+            if (cameraTransform == null && UnityEngine.Camera.main != null)
             {
-                cameraTransform = Camera.main.transform;
+                cameraTransform = UnityEngine.Camera.main.transform;
             }
         }
 
@@ -242,29 +242,29 @@ namespace RPG.Combat
         private void LegacyInput()
         {
             // 移動
-            float h = Input.GetAxis("Horizontal");
-            float v = Input.GetAxis("Vertical");
+            float h = UnityEngine.Input.GetAxis("Horizontal");
+            float v = UnityEngine.Input.GetAxis("Vertical");
             moveInput = new Vector2(h, v);
-            
+
             // 走る
-            isRunning = Input.GetKey(KeyCode.LeftShift);
-            
+            isRunning = UnityEngine.Input.GetKey(KeyCode.LeftShift);
+
             // 攻撃
-            if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.J) || UnityEngine.Input.GetMouseButtonDown(0))
             {
                 PerformAttack();
             }
-            
+
             // スキル
-            if (Input.GetKeyDown(KeyCode.K))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.K))
             {
                 ExecuteSkill(skill1, Skill1Param);
             }
-            if (Input.GetKeyDown(KeyCode.L))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.L))
             {
                 ExecuteSkill(skill2, Skill2Param);
             }
-            if (Input.GetKeyDown(KeyCode.U))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.U))
             {
                 ExecuteSkill(ultimateSkill, UltimateParam);
             }
