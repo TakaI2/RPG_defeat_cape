@@ -122,11 +122,14 @@ namespace RPG.Action
     }
 
     /// <summary>
-    /// 掴むアクション
+    /// 掴むアクション（IKベース）
     /// </summary>
     public class GrabAction : ActionBase
     {
         public override string ActionName => "Grab";
+
+        // IKターゲット用の一時オブジェクト
+        private GameObject _ikTargetObject;
 
         public override bool CanExecute(ActionContext context)
         {
@@ -140,14 +143,26 @@ namespace RPG.Action
         {
             var actor = context.Actor;
             var target = context.TargetInteractable;
+            var ikController = context.IKController;
+
+            // 掴む位置を取得
+            var grabPoint = target.GetPoint(InteractionPointType.Grab);
+            Vector3 grabPosition = grabPoint?.GetWorldPosition() ?? target.transform.position;
 
             // 1. オブジェクトに視線
             context.EyeGazeController?.SetGazeTarget(target.transform);
 
-            // 2. 掴みアニメーション
-            context.AnimationController?.PlayAnimation("Grab");
+            // 2. IKで手を伸ばす
+            if (ikController != null)
+            {
+                _ikTargetObject = new GameObject("GrabIKTarget");
+                _ikTargetObject.transform.position = grabPosition;
 
-            yield return new WaitForSeconds(0.5f);
+                ikController.SetHandIKTarget(HandType.Right, _ikTargetObject.transform);
+                yield return ikController.SetHandIKWeight(HandType.Right, 1f, 0.4f);
+            }
+
+            yield return new WaitForSeconds(0.2f);
 
             // 3. オブジェクトを手の子要素に
             Transform handTransform = actor.GetHandTransform(HandSide.Right);
@@ -161,10 +176,31 @@ namespace RPG.Action
             // 4. 状態更新
             target.OnGrab(actor);
 
-            yield return new WaitForSeconds(0.2f);
+            // 5. IKを解除
+            if (ikController != null)
+            {
+                yield return ikController.SetHandIKWeight(HandType.Right, 0f, 0.3f);
+            }
 
-            // 5. 視線解除
+            // クリーンアップ
+            if (_ikTargetObject != null)
+            {
+                Object.Destroy(_ikTargetObject);
+                _ikTargetObject = null;
+            }
+
+            // 6. 視線解除
             context.EyeGazeController?.SetWeightImmediate(0);
+        }
+
+        public override void Cancel(ActionContext context)
+        {
+            base.Cancel(context);
+            if (_ikTargetObject != null)
+            {
+                Object.Destroy(_ikTargetObject);
+                _ikTargetObject = null;
+            }
         }
     }
 
@@ -204,11 +240,13 @@ namespace RPG.Action
     }
 
     /// <summary>
-    /// 触るアクション
+    /// 触るアクション（IKベース）
     /// </summary>
     public class TouchAction : ActionBase
     {
         public override string ActionName => "Touch";
+
+        private GameObject _ikTargetObject;
 
         public override bool CanExecute(ActionContext context)
         {
@@ -220,28 +258,60 @@ namespace RPG.Action
         public override IEnumerator Execute(ActionContext context)
         {
             var target = context.TargetInteractable;
+            var ikController = context.IKController;
             var touchPoint = target.GetPoint(InteractionPointType.Touch);
+
+            Vector3 touchPosition = touchPoint?.GetWorldPosition() ?? target.transform.position;
 
             // 1. 視線をターゲットへ
             context.EyeGazeController?.SetGazeTarget(touchPoint?.transform ?? target.transform);
 
-            // 2. 手を伸ばすアニメーション
-            context.AnimationController?.PlayAnimation("Reach");
+            // 2. IKで手を伸ばす
+            if (ikController != null)
+            {
+                _ikTargetObject = new GameObject("TouchIKTarget");
+                _ikTargetObject.transform.position = touchPosition;
 
-            yield return new WaitForSeconds(0.5f);
+                ikController.SetHandIKTarget(HandType.Right, _ikTargetObject.transform);
+                yield return ikController.SetHandIKWeight(HandType.Right, 1f, 0.5f);
+            }
 
-            // 3. タッチ
-            target.Interact(context.Actor);
-
+            // 3. タッチ（少し待機してタッチ感を出す）
             yield return new WaitForSeconds(0.3f);
+            target.Interact(context.Actor);
+            yield return new WaitForSeconds(0.2f);
 
-            // 4. 視線解除
+            // 4. IKを解除（手を戻す）
+            if (ikController != null)
+            {
+                yield return ikController.SetHandIKWeight(HandType.Right, 0f, 0.4f);
+            }
+
+            // クリーンアップ
+            if (_ikTargetObject != null)
+            {
+                Object.Destroy(_ikTargetObject);
+                _ikTargetObject = null;
+            }
+
+            // 5. 視線解除
             context.EyeGazeController?.SetWeightImmediate(0);
+        }
+
+        public override void Cancel(ActionContext context)
+        {
+            base.Cancel(context);
+            if (_ikTargetObject != null)
+            {
+                Object.Destroy(_ikTargetObject);
+                _ikTargetObject = null;
+            }
         }
     }
 
     /// <summary>
-    /// 座るアクション
+    /// 座るアクション（アニメーション + IKハイブリッド）
+    /// 低い対象にはKneel_Downアニメーションを使用
     /// </summary>
     public class SitAction : ActionBase
     {
@@ -261,8 +331,8 @@ namespace RPG.Action
             var target = context.TargetInteractable;
             var sitPoint = target.GetPoint(InteractionPointType.Sit);
 
-            Vector3 sitPosition = sitPoint?.transform.position ?? target.transform.position;
-            Quaternion sitRotation = sitPoint?.transform.rotation ?? target.transform.rotation;
+            Vector3 sitPosition = sitPoint?.GetWorldPosition() ?? target.transform.position;
+            Quaternion sitRotation = sitPoint?.GetRotation() ?? target.transform.rotation;
 
             // 1. sit_pointへ移動
             if (context.Navigator != null)
@@ -274,8 +344,9 @@ namespace RPG.Action
             // 2. 向きを調整
             actor.transform.rotation = sitRotation;
 
-            // 3. 座るアニメーション
-            context.AnimationController?.PlayAnimation("Sit");
+            // 3. 座るアニメーション（CrossFadeでステート遷移）
+            // 低いオブジェクト（椅子など）の場合はKneel_Downを使用
+            context.AnimationController?.CrossFade("Kneel_Down", 0.2f);
 
             yield return new WaitForSeconds(0.8f);
 
@@ -303,8 +374,9 @@ namespace RPG.Action
         {
             var actor = context.Actor;
 
-            // 1. 立ち上がるアニメーション
-            context.AnimationController?.PlayAnimation("Stand");
+            // 1. 立ち上がるアニメーション（CrossFadeでIdle等へ遷移）
+            // TODO: Kneel_Upアニメーションが追加されたらそちらを使用
+            context.AnimationController?.CrossFade("Idle", 0.3f);
 
             yield return new WaitForSeconds(0.6f);
 

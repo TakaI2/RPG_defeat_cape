@@ -124,6 +124,9 @@ namespace RPGDefete.Character
             if (fbbik == null || target == null) return;
 
             var effector = hand == HandType.Left ? fbbik.solver.leftHandEffector : fbbik.solver.rightHandEffector;
+            // targetを直接設定（毎フレーム自動追従）
+            effector.target = target;
+            // 位置・回転も設定（即座に反映）
             effector.position = target.position;
             effector.rotation = target.rotation;
 
@@ -169,6 +172,12 @@ namespace RPGDefete.Character
 
             effector.positionWeight = weight;
             effector.rotationWeight = weight;
+
+            // weight=0になったらtargetをクリア
+            if (weight <= 0f)
+            {
+                effector.target = null;
+            }
         }
 
         /// <summary>
