@@ -1129,6 +1129,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -1728013695380148634, guid: 7c595ce141025f847915fcfcfb23333b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1408900677}
+    - targetCorrespondingSourceObject: {fileID: -1728013695380148634, guid: 7c595ce141025f847915fcfcfb23333b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1408900678}
   m_SourcePrefab: {fileID: -3956505258223990651, guid: 7c595ce141025f847915fcfcfb23333b, type: 3}
 --- !u!4 &426473541 stripped
 Transform:
@@ -4570,6 +4573,22 @@ MonoBehaviour:
   showDebugLog: 1
   showClickMarker: 1
   clickMarkerPrefab: {fileID: 0}
+--- !u!114 &1408900678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1408900647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a6d5f6e7c5ffef44947de963ebc7d1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mouseInput: {fileID: 0}
+  actionExecutor: {fileID: 0}
+  character: {fileID: 0}
+  showDebugLog: 1
 --- !u!1 &1442547665
 GameObject:
   m_ObjectHideFlags: 0
