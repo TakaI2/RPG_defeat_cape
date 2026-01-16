@@ -48,6 +48,7 @@ namespace RPG.Action
         /// </summary>
         private void RegisterDefaultActions()
         {
+            // 基本アクション
             RegisterAction(new AttackAction());
             RegisterAction(new MagicAction());
             RegisterAction(new GrabAction());
@@ -56,6 +57,10 @@ namespace RPG.Action
             RegisterAction(new SitAction());
             RegisterAction(new StandAction());
             RegisterAction(new TalkAction());
+
+            // 感情アクション
+            RegisterAction(new KissAction());
+            RegisterAction(new HugAction());
         }
 
         /// <summary>

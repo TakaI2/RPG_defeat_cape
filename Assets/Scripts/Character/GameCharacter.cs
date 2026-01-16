@@ -166,6 +166,22 @@ namespace RPGDefete.Character
         }
 
         /// <summary>
+        /// 指定タイプのインタラクションポイントを取得（左右指定可能）
+        /// </summary>
+        /// <param name="type">InteractionPointType</param>
+        /// <param name="isRight">true=右側、false=左側</param>
+        public InteractionPoint GetInteractionPoint(InteractionPointType type, bool isRight)
+        {
+            // 左右を区別するため、名前で判定
+            // 命名規則: "RightHand", "LeftShoulder" など
+            string sideName = isRight ? "Right" : "Left";
+
+            return interactionPoints.Find(p =>
+                p.PointType == type &&
+                p.PointName.Contains(sideName, System.StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
         /// 全インタラクションポイントを取得
         /// </summary>
         public IReadOnlyList<InteractionPoint> GetAllInteractionPoints()

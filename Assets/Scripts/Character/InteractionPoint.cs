@@ -44,7 +44,7 @@ namespace RPGDefete.Character
         [Header("表示設定")]
         [SerializeField] private bool showGizmo = true;
         [SerializeField] private Color gizmoColor = Color.cyan;
-        [SerializeField] private float gizmoSize = 0.05f;
+        [SerializeField] private float gizmoSize = 0.02f;
 
         // プロパティ
         public InteractionPointType PointType => pointType;
